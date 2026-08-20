@@ -1,258 +1,336 @@
-Añade un sistema completo de gestión de servidores a MD-Server.
+Quiero corregir y mejorar MD-Server v1.1.2.
 
-MIS SERVIDORES
+El servidor Minecraft ahora funciona correctamente y llega a:
 
-Cuando el usuario abra MD-Server, debe existir una opción:
+[Server thread/INFO]: Done (14.375s)! For help, type "help" or "?"
 
-╭──────────────────────────────╮
-│        MD SERVER             │
-├──────────────────────────────┤
-│ [1] Crear servidor            │
-│ [2] Mis servidores            │
-│ [3] Configuración             │
-│ [4] Salir                     │
-╰──────────────────────────────╯
+El problema es que, cuando el servidor termina de iniciar, MD-Server no muestra al usuario la dirección/IP para conectarse.
 
-Al seleccionar:
+Quiero que corrijas esto sin romper ninguna de las funciones que ya funcionan.
 
-[2] Mis servidores
+OBJETIVO PRINCIPAL
 
-debe mostrar todos los servidores que el usuario haya creado.
+Cuando MD-Server detecte que el servidor Minecraft terminó de iniciar correctamente, por ejemplo al detectar:
+
+Done (...)! For help, type "help" or "?"
+
+debe mostrar automáticamente una sección muy visible con las direcciones de conexión.
+
+Debe aparecer ANTES de mostrar nuevamente:
+
+[Command] >
+
+EJEMPLO DEL RESULTADO
+
+Después de:
+
+[Server thread/INFO]: Done (14.375s)! For help, type "help" or "?"
+
+quiero algo parecido a:
+
+╭─────────────────────────────────────────────────────────────╮
+│                  ✓ SERVIDOR ONLINE                         │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  🎮 Minecraft: 1.7.10                                      │
+│  ⚙ Tipo: Vanilla                                           │
+│  📡 Puerto: 25565                                          │
+│                                                             │
+│  🏠 ESTE DISPOSITIVO                                       │
+│                                                             │
+│     127.0.0.1:25565                                       │
+│                                                             │
+│  📶 RED LOCAL / WI-FI                                     │
+│                                                             │
+│     192.168.1.25:25565                                    │
+│                                                             │
+│  💡 Usa 127.0.0.1:25565 para conectarte desde este        │
+│     mismo teléfono.                                        │
+│                                                             │
+│  💡 Usa la dirección de RED LOCAL para conectarte desde    │
+│     otro dispositivo conectado a la misma Wi-Fi.           │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
+
+╭─────────────────────────────────────────────────────────────╮
+│ CONSOLA DEL SERVIDOR                                       │
+│ Escribe un comando de Minecraft, 'exit' para salir o       │
+│ 'stop' para detener el servidor.                           │
+╰─────────────────────────────────────────────────────────────╯
+
+[Command] >
+
+No copies literalmente "192.168.1.25".
+
+La IP debe detectarse automáticamente.
+
+1. DETECTAR EL PUERTO
+
+No asumas que siempre es "25565".
+
+Lee el puerto real desde:
+
+server.properties
 
 Por ejemplo:
 
-╭────────────────────────────────────────────────────╮
-│                  MIS SERVIDORES                    │
-├────────────────────────────────────────────────────┤
-│                                                    │
-│ [1] Survival 1.7.10                                │
-│     Minecraft 1.7.10 • Forge                       │
-│     ● OFFLINE                                      │
-│                                                    │
-│ [2] Survival 1.20.1                                │
-│     Minecraft 1.20.1 • Fabric                      │
-│     ● OFFLINE                                      │
-│                                                    │
-│ [3] Vanilla 1.21.1                                │
-│     Minecraft 1.21.1 • Vanilla                    │
-│     ● ONLINE                                       │
-│                                                    │
-│ [4] Volver                                         │
-╰────────────────────────────────────────────────────╯
+server-port=25565
 
-ADMINISTRAR UN SERVIDOR
+Si el usuario cambia el puerto a:
 
-Al seleccionar un servidor debe aparecer:
+server-port=25566
 
-╭──────────────────────────────────────────────╮
-│        SURVIVAL 1.7.10                       │
-├──────────────────────────────────────────────┤
-│ [1] Iniciar servidor                          │
-│ [2] Detener servidor                          │
-│ [3] Consola                                   │
-│ [4] Información                               │
-│ [5] Configuración                             │
-│ [6] Eliminar servidor                         │
-│ [7] Volver                                    │
-╰──────────────────────────────────────────────╯
+debe mostrar:
 
-ELIMINAR SERVIDOR
+127.0.0.1:25566
 
-La opción "[6] Eliminar servidor" debe ser muy clara.
+y la IP de red:
 
-Al seleccionarla:
+192.168.x.x:25566
 
-⚠ ELIMINAR SERVIDOR
+2. IP DEL MISMO DISPOSITIVO
 
-Estás a punto de eliminar:
+Mostrar siempre:
 
-Servidor: Survival 1.7.10
-Minecraft: 1.7.10
-Tipo: Forge
+127.0.0.1:<PUERTO>
 
-Esto eliminará:
-• Mundo
-• Configuración
-• Mods
-• Plugins
-• Archivos del servidor
+Esta dirección debe explicarse claramente:
 
-⚠ ESTA ACCIÓN NO SE PUEDE DESHACER.
+🏠 Este dispositivo
+Usa esta dirección para conectarte desde el mismo teléfono.
 
-¿Quieres continuar?
+3. IP DE LA RED LOCAL
 
-[1] Sí, eliminar
-[2] Cancelar
+Detecta automáticamente la dirección IPv4 de la interfaz de red activa en Termux/Android.
 
-No debe eliminar nada sin confirmación explícita.
+Por ejemplo:
 
-SEGURIDAD CONTRA BORRADOS ACCIDENTALES
+192.168.1.25
 
-Si el usuario selecciona eliminar:
+y combinarla con el puerto:
 
-[1] Sí, eliminar
+192.168.1.25:25565
 
-pedir una segunda confirmación:
+Debe funcionar con redes que utilicen:
 
-Escribe ELIMINAR para confirmar:
->
+192.168.x.x
+10.x.x.x
+172.16.x.x - 172.31.x.x
 
-Solo si el usuario escribe exactamente:
+No asumas que siempre será "192.168.1.x".
 
-ELIMINAR
+4. NO USAR LA IP DEL SERVIDOR JAVA
 
-se debe proceder.
+Minecraft muestra:
 
-Si escribe cualquier otra cosa:
+Starting Minecraft server on *:25565
 
-✓ Eliminación cancelada.
+El "*" significa que está escuchando en todas las interfaces.
 
-SERVIDOR EN EJECUCIÓN
+NO muestres:
 
-Si el usuario intenta eliminar un servidor que está ONLINE:
+*:25565
 
-⚠ ESTE SERVIDOR ESTÁ ACTUALMENTE EN EJECUCIÓN.
+como dirección para el jugador.
 
-Debes detenerlo antes de eliminarlo.
+Convierte esa información en direcciones utilizables:
 
-[1] Detener servidor y continuar
-[2] Cancelar
+127.0.0.1:25565
+192.168.x.x:25565
 
-Nunca eliminar directamente los archivos de un servidor que está ejecutándose.
+5. DETECCIÓN DEL SERVIDOR ONLINE
 
-DESPUÉS DE ELIMINAR
+La información de IP debe aparecer solamente cuando el servidor realmente esté listo.
+
+Utiliza como indicador:
+
+Done (...)! For help, type "help" or "?"
+
+No muestres:
+
+✓ SERVIDOR ONLINE
+
+simplemente porque el proceso Java haya iniciado.
+
+Debe esperar a que Minecraft indique que terminó de preparar el mundo y está listo para recibir conexiones.
+
+6. EVITAR QUE APAREZCA MÁS DE UNA VEZ
+
+Si Minecraft muestra varias líneas relacionadas con "Done", MD-Server no debe imprimir el panel repetidamente.
+
+El panel:
+
+✓ SERVIDOR ONLINE
+
+debe mostrarse una sola vez por cada inicio del servidor.
+
+7. SI NO SE PUEDE DETECTAR LA IP LOCAL
+
+No debe producirse un error.
 
 Mostrar:
 
-✓ Servidor eliminado correctamente.
+⚠ No se pudo detectar automáticamente la IP de la red local.
 
-El servidor "Survival 1.7.10" y sus archivos han sido eliminados.
+Puedes conectarte desde este dispositivo usando:
 
-Después regresar automáticamente a:
-
-MIS SERVIDORES
-
-y actualizar la lista.
-
-CONSERVAR LOS DEMÁS SERVIDORES
-
-MUY IMPORTANTE:
-
-Si existen:
-
-Servidor A
-Servidor B
-Servidor C
-
-y el usuario elimina:
-
-Servidor B
-
-solamente debe eliminarse el servidor B.
-
-Nunca:
-
-- borrar toda la carpeta de servidores;
-- borrar otros mundos;
-- borrar configuraciones globales;
-- borrar mods compartidos si pertenecen a otros servidores;
-- borrar instalaciones de Java;
-- borrar MD-Server.
-
-ESTRUCTURA DE DATOS
-
-Diseña una estructura clara para identificar los servidores.
-
-Por ejemplo:
-
-~/MD-Server/
-    ...
-    
-~/MD-Servers/
-    survival-1-7-10/
-        server.properties
-        world/
-        mods/
-        logs/
-        server.jar
-
-    survival-1-20-1/
-        server.properties
-        world/
-        mods/
-        logs/
-        server.jar
-
-O utiliza la estructura actual del proyecto si ya existe una arquitectura mejor.
-
-No rompas las instalaciones existentes.
-
-Si actualmente MD-Server guarda los servidores en otra ubicación, adapta esta funcionalidad a la estructura existente.
-
-SERVIDORES EXISTENTES
-
-La nueva versión debe detectar automáticamente los servidores que ya fueron creados con versiones anteriores de MD-Server.
-
-No quiero que el usuario tenga que crearlos nuevamente después de actualizar a v1.1.1.
-
-RENOMBRAR SERVIDOR
-
-También sería útil añadir:
-
-[5] Renombrar servidor
-
-para que el usuario pueda cambiar:
-
-Mi servidor
-
-por:
-
-Survival con amigos
-
-sin modificar accidentalmente los archivos internos.
-
-INFORMACIÓN
-
-La opción "Información" debería mostrar:
-
-╭──────────────────────────────────────────────╮
-│ INFORMACIÓN DEL SERVIDOR                     │
-├──────────────────────────────────────────────┤
-│ Nombre:       Survival con amigos             │
-│ Minecraft:    1.7.10                          │
-│ Tipo:         Forge                            │
-│ Estado:       ● OFFLINE                       │
-│ Puerto:       25565                           │
-│ Carpeta:      ~/MD-Servers/survival-1-7-10    │
-╰──────────────────────────────────────────────╯
-
-Cuando esté ONLINE, mostrar también las direcciones:
-
-Local:
 127.0.0.1:25565
 
-Red local:
+La consola debe seguir funcionando normalmente.
+
+8. IP PÚBLICA / AMIGOS DESDE INTERNET
+
+Por ahora NO inventes ni muestres una IP pública como si fuera directamente utilizable.
+
+Añade una sección opcional:
+
+🌎 INTERNET
+
+No configurado.
+
+Para permitir conexiones desde Internet puedes configurar
+un túnel como Playit o Tailscale.
+
+Si MD-Server ya tiene integración con algún sistema de túnel, utiliza la dirección real proporcionada por ese sistema.
+
+Nunca inventes una dirección.
+
+9. INFORMACIÓN DEL SERVIDOR
+
+Utiliza los datos reales del servidor:
+
+Minecraft: 1.7.10
+Tipo: Vanilla / Fabric / Forge
+Puerto: 25565
+Estado: ONLINE
+
+No hardcodees estos valores.
+
+10. COMPATIBILIDAD
+
+Esta función debe funcionar para:
+
+- Vanilla
+- Fabric
+- Forge
+- Minecraft 1.7.10
+- Minecraft 1.12.2
+- Minecraft 1.16.5
+- Minecraft 1.20.1
+- versiones modernas
+
+No cambies innecesariamente la lógica de descarga o instalación de servidores.
+
+11. IMPORTANTE: CONSERVAR FUNCIONES ACTUALES
+
+La versión v1.1.2 ya tiene:
+
+- Instalador automático.
+- Actualización automática.
+- Comando global "mdserver".
+- Menú principal.
+- Crear servidor.
+- Mis servidores.
+- Selección de Vanilla/Fabric/Forge.
+- Selección de versiones.
+- Soporte para versiones personalizadas.
+- Consola del servidor.
+
+No rompas ninguna de estas funciones.
+
+La modificación debe integrarse con la arquitectura actual.
+
+12. CONSOLA
+
+Actualmente la consola funciona y permite:
+
+help
+op jugador
+stop
+
+No rompas el sistema de consola mientras agregas la detección de IP.
+
+La información de conexión debe aparecer antes de:
+
+[Command] >
+
+pero después de que Minecraft indique que está listo.
+
+13. PRUEBA OBLIGATORIA
+
+Prueba específicamente:
+
+Vanilla
+Minecraft 1.7.10
+Puerto 25565
+
+Cuando aparezca:
+
+Done (...)! For help, type "help" or "?"
+
+debe aparecer automáticamente:
+
+✓ SERVIDOR ONLINE
+
+127.0.0.1:25565
+
+<IP LOCAL DETECTADA>:25565
+
+Después debe aparecer:
+
+[Command] >
+
+y el usuario debe poder seguir utilizando la consola normalmente.
+
+14. NO QUIERO UNA SOLUCIÓN HARDCODEADA
+
+NO hagas simplemente:
+
+ip = "192.168.1.25"
+port = 25565
+
+La IP y el puerto deben detectarse dinámicamente.
+
+La solución debe funcionar en otros teléfonos Android, otras redes Wi-Fi y otros puertos.
+
+15. ACTUALIZAR VERSIÓN
+
+Mantén el proyecto como:
+
+MD-Server v1.1.2
+
+No cambies la versión a otra distinta.
+
+Actualiza el README si es necesario para explicar que MD-Server muestra automáticamente las direcciones de conexión cuando el servidor está ONLINE.
+
+RESULTADO FINAL
+
+Quiero que al crear un servidor el usuario no tenga que preguntarse:
+
+«"¿Cuál es la IP de mi servidor?"»
+
+MD-Server debe detectarla y mostrársela automáticamente en un panel claro justo cuando Minecraft termine de iniciar.
+
+La experiencia final debe ser:
+
+Creando servidor...
+        ↓
+Descargando archivos...
+        ↓
+Iniciando Minecraft...
+        ↓
+Preparando mundo...
+        ↓
+✓ Servidor ONLINE
+        ↓
+📡 Dirección:
+127.0.0.1:25565
+
+📶 Red local:
 192.168.x.x:25565
+        ↓
+CONSOLA DEL SERVIDOR
+[Command] >
 
-Internet:
-<dirección del túnel si está configurado>
-
-OBJETIVO
-
-Quiero que MD-Server deje de ser solamente un instalador/creador de servidores y se convierta en un verdadero administrador de servidores Minecraft para Termux/Android.
-
-El usuario debe poder:
-
-- Crear servidores.
-- Ver sus servidores.
-- Iniciar servidores.
-- Detener servidores.
-- Acceder a la consola.
-- Ver IP y puerto.
-- Configurar servidores.
-- Renombrar servidores.
-- Eliminar servidores.
-- Gestionar varios servidores independientemente.
-
-Todo debe funcionar desde la interfaz de MD-Server sin que el usuario tenga que navegar manualmente por las carpetas de Termux.
-eso si no rompas lo que ya esta hecho solo adaptolo para que sea mejor 
+Analiza primero el código existente, identifica dónde se procesa la salida de Minecraft y dónde se inicia la consola, y realiza la integración en el lugar correcto. No crees un sistema paralelo que duplique la lógica existente.
+luego sube el cambio a la v1.1.3
