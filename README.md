@@ -34,6 +34,8 @@ pkg update -y && pkg install -y git python && git clone --depth 1 https://github
 > ℹ️ La primera vez te preguntará el idioma y guía todo el proceso.
 > La primera vez que uses el código, te preguntará si **es tu primera vez** o si **ya tienes un servidor** creado (para encenderlo directamente sin crear uno nuevo).
 > ℹ️ On first use it asks for your language and guides you through the entire process.
+>
+> 🆕 **v1.0.1**: menús 100% numéricos (elige con 1, 2, 3...), RAM por número y soporte de **versiones antiguas** (1.7.10, 1.8.9, etc.) con lista paginada o escritura manual.
 
 ---
 
