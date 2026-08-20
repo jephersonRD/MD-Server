@@ -31,7 +31,7 @@ INSTALL_DIR="${MD_SERVER_HOME:-$HOME}/MD-Server"
 
 # ---------- banner ----------
 echo -e "${INFO}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${INFO}║        MD SERVER — install / update / repair             ║${NC}"
+echo -e "${INFO}║     MD SERVER v1.1.1 — install / update / repair        ║${NC}"
 echo -e "${INFO}╚══════════════════════════════════════════════════════════╝${NC}"
 echo
 
@@ -126,8 +126,12 @@ if ! have_cmd curl && ! have_cmd wget; then
 fi
 
 # ---------- (re)obtain / update the code ----------
+STATE="installed"   # installed | updated | up_to_date | repaired
+
 ensure_repo() {
     if [ -d "${REPO_DIR}/.git" ]; then
+        local old_head
+        old_head="$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo none)"
         msg "Updating existing installation at ${REPO_DIR}..."
         git -C "$REPO_DIR" fetch --depth 1 "origin" "$BRANCH" >/dev/null 2>&1 || \
             git -C "$REPO_DIR" fetch origin "$BRANCH" >/dev/null 2>&1 || true
@@ -139,7 +143,13 @@ ensure_repo() {
                 git -C "$REPO_DIR" checkout -f "${BRANCH}" >/dev/null 2>&1 || true
             fi
         fi
-        ok "Code up to date."
+        local new_head
+        new_head="$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo none)"
+        if [ "$old_head" = "$new_head" ] || [ "$old_head" = "none" ]; then
+            STATE="up_to_date"
+        else
+            STATE="updated"
+        fi
     elif [ -d "$REPO_DIR" ]; then
         # Existing folder that is NOT a git repo: inspect before touching anything.
         if [ -f "${REPO_DIR}/main.py" ] && [ -f "${REPO_DIR}/install.sh" ]; then
@@ -151,7 +161,7 @@ ensure_repo() {
             if git -C "$REPO_DIR" rev-parse --verify "origin/${BRANCH}" >/dev/null 2>&1; then
                 git -C "$REPO_DIR" checkout -f -B "${BRANCH}" "origin/${BRANCH}" >/dev/null 2>&1 || true
             fi
-            ok "Existing folder converted and updated."
+            STATE="repaired"
         else
             # Damaged / unrelated folder: move it aside safely, then clone fresh.
             local backup="${REPO_DIR}.old-$(date +%Y%m%d-%H%M%S)"
@@ -160,9 +170,11 @@ ensure_repo() {
             mv "$REPO_DIR" "$backup"
             ok "Your files were preserved at: ${backup}"
             clone_fresh
+            STATE="repaired"
         fi
     else
         clone_fresh
+        STATE="installed"
     fi
 }
 
@@ -243,15 +255,47 @@ esac
 
 # ---------- done ----------
 echo
-echo -e "${OK}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${OK}║  ${BOLD}MD Server installed / updated successfully${NC}${OK}                    ║${NC}"
-echo -e "${OK}╚══════════════════════════════════════════════════════════╝${NC}"
+case "$STATE" in
+    updated)
+        echo -e "${OK}╔══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${OK}║       ✓  MD SERVER HA SIDO ACTUALIZADO CORRECTAMENTE        ║${NC}"
+        echo -e "${OK}╚══════════════════════════════════════════════════════════════╝${NC}"
+        ;;
+    repaired)
+        echo -e "${OK}╔══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${OK}║        ✓  MD SERVER REPARADO Y ACTUALIZADO                   ║${NC}"
+        echo -e "${OK}╚══════════════════════════════════════════════════════════════╝${NC}"
+        ;;
+    up_to_date)
+        echo -e "${OK}╔══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${OK}║            ✓  MD SERVER YA ESTÁ ACTUALIZADO                  ║${NC}"
+        echo -e "${OK}╚══════════════════════════════════════════════════════════════╝${NC}"
+        ;;
+    *)
+        echo -e "${OK}╔══════════════════════════════════════════════════════════════╗${NC}"
+        echo -e "${OK}║              ✓  MD SERVER LISTO PARA USAR                    ║${NC}"
+        echo -e "${OK}╚══════════════════════════════════════════════════════════════╝${NC}"
+        ;;
+esac
 echo
-echo -e "${INFO}  Code:    ${BOLD}${REPO_DIR}${NC}"
-echo -e "${INFO}  Command: ${BOLD}mdserver${NC}  (from any directory)"
-echo -e "${INFO}  Or:      ${BOLD}${PYTHON} ${REPO_DIR}/main.py${NC}"
+echo -e "${OK}✓ MD Server ha sido instalado/actualizado correctamente.${NC}"
+echo
+echo -e "${BOLD}🚀 Para abrir MD Server:${NC}"
+echo -e "   Escribe este comando en Termux:"
+echo
+echo -e "   ${BOLD}mdserver${NC}"
+echo
+echo -e "Puedes ejecutar \"mdserver\" desde ${BOLD}cualquier carpeta${NC}."
+echo -e "No necesitas entrar manualmente a la carpeta ${BOLD}MD-Server${NC}."
+echo
+echo -e "   ${INFO}Ejemplo:${NC}"
+echo
+echo -e "   ${BOLD}\$ mdserver${NC}"
+echo
+echo -e "¿Es la primera vez que lo utilizas?"
+echo -e "Ejecuta \"mdserver\" y sigue el asistente para crear tu servidor."
 echo
 if [ -f "${REPO_DIR}/main.py" ]; then
-    echo -e "${INFO}  First run? Just type ${BOLD}mdserver${NC} and follow the wizard."
+    echo -e "${INFO}  Código instalado en: ${BOLD}${REPO_DIR}${NC}"
 fi
 echo

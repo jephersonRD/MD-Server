@@ -2,7 +2,7 @@
 import os
 import sys
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 __repo__ = "jephersonRD/MD-Server"
 __branch__ = "main"
 

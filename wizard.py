@@ -1,4 +1,5 @@
 import os
+import re
 import time
 from pathlib import Path
 
@@ -10,6 +11,12 @@ from core.i18n import t
 from ui import menus, progress
 
 console = Console()
+
+_VERSION_RE = re.compile(r"^v?\d+(\.\d+){1,3}(-[0-9A-Za-z.]+)?$|^\d{2}w\d{2}[a-z]$")
+
+
+def _is_valid_version(v: str) -> bool:
+    return bool(_VERSION_RE.match(v.strip()))
 
 
 def _pick_version(versions):
@@ -24,7 +31,15 @@ def _pick_version(versions):
         opts.append(("✎ Otra versión (escribe el número, ej. 1.7.10)",))
         if offset > 0:
             opts.append(("← Volver a versiones más recientes",))
-        i = int(menus.ask(t("wizard.version"), opts))
+        choice = menus.ask(t("wizard.version"), opts, allow_custom=True)
+        if not choice.isdigit():
+            # The user typed a version directly (e.g. "1.7.10") — accept it.
+            if _is_valid_version(choice):
+                menus.success(f"{t('wizard.version_selected')}: {choice}")
+                return choice
+            menus.error(t("wizard.custom_version_invalid"))
+            continue
+        i = int(choice)
         if i <= len(chunk):
             return chunk[i - 1]
         idx = i - len(chunk)  # 1-based index within the extra options
@@ -33,20 +48,16 @@ def _pick_version(versions):
                 offset += PAGE
                 continue
             if idx == 2:
-                v = menus.input_text(t("wizard.version"), default="")
-                if v in versions:
-                    return v
-                menus.error(f"{t('wizard.version_error')} ({v})")
-                continue
+                v = menus.input_text(t("wizard.custom_version_prompt"), validate=_is_valid_version)
+                menus.success(f"{t('wizard.version_selected')}: {v}")
+                return v
             offset = max(0, offset - PAGE)
             continue
         # last page (no more older versions)
         if idx == 1:
-            v = menus.input_text(t("wizard.version"), default="")
-            if v in versions:
-                return v
-            menus.error(f"{t('wizard.version_error')} ({v})")
-            continue
+            v = menus.input_text(t("wizard.custom_version_prompt"), validate=_is_valid_version)
+            menus.success(f"{t('wizard.version_selected')}: {v}")
+            return v
         if idx == 2:
             offset = max(0, offset - PAGE)
             continue
@@ -71,6 +82,8 @@ def run_wizard(auto_ram=None):
             versions = version_manager.fetch_vanilla_versions()
         else:
             versions = version_manager.fetch_vanilla_versions()[:30]
+    if version_manager.last_used_fallback:
+        menus.warning(t("wizard.versions_fallback"))
     version = _pick_version(versions)
 
     # RAM
@@ -111,6 +124,10 @@ def run_wizard(auto_ram=None):
             required_java = req if isinstance(req, int) else required_java
         except Exception:
             pass
+    if version_manager.needs_java8(version):
+        if not menus.confirm(t("wizard.old_java_warning").format(version=version)):
+            menus.info(t("common.cancel"))
+            return None, None
     menus.info(f"Java {required_java}+ required")
     if not java_manager.ensure_java(required_java, auto=True):
         menus.error("Java installation failed")
@@ -162,13 +179,15 @@ def run_wizard(auto_ram=None):
             result = {"jar": "server.jar", "java": info.get("java", 17)}
         elif srv_type == "fabric":
             loaders = version_manager.fetch_fabric_versions(version)
-            loader = loaders[0] if loaders else "0.16.10"
+            if not loaders:
+                raise RuntimeError(t("wizard.unsupported_loader").format(loader=t("wizard.fabric"), version=version))
+            loader = loaders[0]
             result = server_manager.install_fabric(sdir, version, loader, progress_cb=None)
             meta["loader"] = loader
         else:
             forges = version_manager.fetch_forge_versions(version)
             if not forges:
-                raise RuntimeError(t("wizard.version_error") + f" {version}")
+                raise RuntimeError(t("wizard.unsupported_loader").format(loader=t("wizard.forge"), version=version))
             forge = forges[0]
             result = server_manager.install_forge(sdir, version, forge, progress_cb=None)
             meta["forge"] = forge

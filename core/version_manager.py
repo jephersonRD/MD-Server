@@ -8,8 +8,11 @@ FORGE_INDEX = "https://files.minecraftforge.net/net/minecraftforge/forge/index.j
 FORGE_MAVEN = "https://maven.minecraftforge.net/net/minecraftforge/forge"
 DEFAULT_VERSIONS = [
     "1.21.4", "1.21.1", "1.20.6", "1.20.4", "1.20.1", "1.19.4",
-    "1.18.2", "1.16.5", "1.12.2", "1.8.9",
+    "1.18.2", "1.16.5", "1.12.2", "1.8.9", "1.7.10",
 ]
+
+# True when the last fetch_vanilla_versions() call had to use the local list.
+last_used_fallback = False
 
 
 def _get_json(url, timeout=20):
@@ -23,6 +26,7 @@ def _get_raw(url, timeout=20):
 
 
 def fetch_vanilla_versions() -> list:
+    global last_used_fallback
     try:
         data = _get_json(MANIFEST_URL)
         versions = []
@@ -30,9 +34,14 @@ def fetch_vanilla_versions() -> list:
             if v.get("type") == "release":
                 versions.append(v.get("id", ""))
         versions.sort(key=lambda s: [int(p) if p.isdigit() else p for p in s.split(".")], reverse=True)
-        return versions or DEFAULT_VERSIONS
+        if not versions:
+            last_used_fallback = True
+            return list(DEFAULT_VERSIONS)
+        last_used_fallback = False
+        return versions
     except Exception:
-        return DEFAULT_VERSIONS
+        last_used_fallback = True
+        return list(DEFAULT_VERSIONS)
 
 
 def get_vanilla_server_info(version: str) -> dict:
@@ -70,6 +79,17 @@ def java_21_required(version: str) -> bool:
         else:
             if int(nums[0]) >= 21:
                 return True
+        return False
+    except Exception:
+        return False
+
+
+def needs_java8(version: str) -> bool:
+    """Versions older than 1.17 require Java 8 (not available in Termux)."""
+    try:
+        nums = version.split(".")
+        if int(nums[0]) == 1:
+            return int(nums[1]) < 17
         return False
     except Exception:
         return False

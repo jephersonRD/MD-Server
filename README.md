@@ -1,6 +1,6 @@
 <div align="center">
 
-![MD Server](https://img.shields.io/badge/MD%20Server-v1.1.0-cyan?style=for-the-badge)
+![MD Server](https://img.shields.io/badge/MD%20Server-v1.1.1-cyan?style=for-the-badge)
 [![Termux](https://img.shields.io/badge/Platform-Termux%20%28Android%29-3b9e46?style=for-the-badge)](https://termux.dev)
 [![Java](https://img.shields.io/badge/Java-21%20%2F%2017-e76f00?style=for-the-badge)](https://adoptium.net)
 [![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](LICENSE)
@@ -45,7 +45,7 @@ pkg update -y && pkg install -y git python && cd ~ && if [ -d MD-Server/.git ]; 
 > La primera vez que uses el código, te preguntará si **es tu primera vez** o si **ya tienes un servidor** creado (para encenderlo directamente sin crear uno nuevo).
 > ℹ️ On first use it asks for your language and guides you through the entire process.
 >
-> 🆕 **v1.1.0**: instalador y actualizador automático. **v1.0.1**: menús 100% numéricos (elige con 1, 2, 3...), RAM por número y soporte de **versiones antiguas** (1.7.10, 1.8.9, etc.) con lista paginada o escritura manual.
+> 🆕 **v1.1.1**: selector de versiones corregido (escribe 1.7.10, 1.12.2, 1.16.5 sin volver al menú), mensajes claros cuando Mojang no responde (lista local de respaldo) y aviso si la versión requiere Java 8 (no disponible en Termux). **v1.1.0**: instalador y actualizador automático. **v1.0.1**: menús 100% numéricos y RAM por número.
 
 ---
 
@@ -112,6 +112,30 @@ o directamente:
 
 `install.sh` crea el comando global `mdserver` (en `$PREFIX/bin` en Termux, o `~/.local/bin` en otros sistemas).
 
+---
+
+## ▶️ Abrir MD Server | Open MD Server
+
+**`mdserver` es el comando global** que abre MD Server desde **cualquier directorio** de Termux.
+
+```bash
+mdserver
+```
+
+Ejemplos:
+
+```bash
+cd ~
+mdserver
+```
+
+```bash
+cd ~/storage/downloads
+mdserver
+```
+
+> No necesitas entrar manualmente a la carpeta `MD-Server` ni recordar rutas: escribe `mdserver` y listo.
+
 ### 🤖 Instalación automática
 - Si la carpeta `MD-Server` **no existe**, se clona desde GitHub.
 - Si ya existe un repo Git, se **actualiza** automáticamente.
@@ -132,15 +156,48 @@ o directamente:
 
 y continúa ejecutándose. Si estás al día, no muestra nada (arranca directo).
 
-**Manual:** vuelve a ejecutar el instalador (Opción A o B). No necesitas borrar nada.
+**Manual:** vuelve a ejecutar el instalador (Opción A o B). No necesitas borrar nada. El propio instalador detecta si ya existe la instalación y la actualiza:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/jephersonRD/MD-Server/main/install.sh | bash
 ```
 
+Resultados posibles al actualizar:
+
+```
+✓ MD SERVER YA ESTÁ ACTUALIZADO
+```
+o
+```
+✓ MD SERVER HA SIDO ACTUALIZADO CORRECTAMENTE
+```
+
 Opciones de actualización de `mdserver`:
 - `mdserver --no-update` — omite la comprobación esta vez.
 - `mdserver --check-update` — solo comprueba si hay actualizaciones (no abre la app).
+
+---
+
+## 🛠️ Reparar | Repair
+
+Si algo se rompió (instalación a medias, carpeta dañada, archivos borrados, comando `mdserver` no funciona), solo **vuelve a ejecutar el instalador**:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jephersonRD/MD-Server/main/install.sh | bash
+```
+
+El instalador detecta el problema automáticamente:
+
+- Si la carpeta `MD-Server` está **dañada o no es el proyecto**, la **respalda** como `MD-Server.old-FECHA` (tus archivos no se pierden) y descarga una copia nueva.
+- Si **faltan dependencias**, las instala.
+- Si **falta el comando** `mdserver`, lo vuelve a crear.
+- Si **una actualización quedó a medias**, la completa.
+
+Después vuelve a abrir el programa:
+
+```bash
+mdserver
+```
 
 ---
 

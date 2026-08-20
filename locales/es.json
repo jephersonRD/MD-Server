@@ -230,5 +230,11 @@
   "update.available": "Nueva versión disponible. Actualizando MD Server...",
   "update.up_to_date": "MD Server está actualizado (v{version})",
   "update.updated": "MD Server actualizado correctamente",
-  "update.offline": "Sin conexión. Se continúa con la versión local."
+  "update.offline": "Sin conexión. Se continúa con la versión local.",
+  "wizard.version_selected": "Versión seleccionada",
+  "wizard.custom_version_prompt": "Introduce la versión de Minecraft",
+  "wizard.custom_version_invalid": "Eso no parece una versión válida (ej. 1.20.1 o 1.7.10). Inténtalo de nuevo.",
+  "wizard.versions_fallback": "No se pudieron obtener versiones de Mojang. Usando lista local de respaldo. Puedes escribir cualquier versión manualmente.",
+  "wizard.unsupported_loader": "{loader} no es compatible con Minecraft {version}. Elige otra versión o usa Vanilla.",
+  "wizard.old_java_warning": "Minecraft {version} requiere Java 8, que no está disponible en Termux (solo Java 17/21). Es posible que el servidor NO pueda iniciar. ¿Continuar de todos modos?"
 }
