@@ -1,438 +1,258 @@
-Quiero que actualices y mejores completamente mi proyecto MD-Server para lanzar la versión v1.1.1.
+Añade un sistema completo de gestión de servidores a MD-Server.
 
-Repositorio:
+MIS SERVIDORES
 
-https://github.com/jephersonRD/MD-Server
+Cuando el usuario abra MD-Server, debe existir una opción:
 
-La versión anterior ya tiene un instalador automático que permite instalar, actualizar y reparar MD-Server desde Termux mediante:
+╭──────────────────────────────╮
+│        MD SERVER             │
+├──────────────────────────────┤
+│ [1] Crear servidor            │
+│ [2] Mis servidores            │
+│ [3] Configuración             │
+│ [4] Salir                     │
+╰──────────────────────────────╯
 
-curl -fsSL https://raw.githubusercontent.com/jephersonRD/MD-Server/main/install.sh | bash
+Al seleccionar:
 
-Quiero que mantengas esa facilidad de instalación, pero corrijas varios problemas que encontré durante las pruebas.
+[2] Mis servidores
 
-1. CORREGIR EL SELECTOR DE VERSIONES DE MINECRAFT
-
-Actualmente, cuando selecciono Forge y quiero Minecraft 1.7.10, aparece:
-
-[31] ✎ Otra versión (escribe el número, ej. 1.7.10)
-
-> 1.7.10
-Invalid option. Choose a number.
-
-> 31
-Versión de Minecraft: 1.7.10
-
-Eso está mal diseñado.
-
-Cuando el usuario seleccione:
-
-31
-
-debe aparecer inmediatamente:
-
-Introduce la versión de Minecraft:
->
-
-Y el usuario debe poder escribir:
-
-1.7.10
-
-El programa debe aceptar esa versión y continuar inmediatamente.
-
-NO debe volver a mostrar el menú de versiones.
-
-Flujo correcto:
-
-[31] ✎ Otra versión
-
-> 31
-
-Introduce la versión de Minecraft:
-> 1.7.10
-
-✓ Versión seleccionada: 1.7.10
-
-Después debe continuar con el siguiente paso del asistente.
-
-Validación
-
-La entrada personalizada debe:
-
-- aceptar "1.7.10";
-- aceptar "1.12.2";
-- aceptar "1.16.5";
-- aceptar "1.20.1";
-- aceptar versiones modernas;
-- rechazar entradas vacías;
-- rechazar texto que no parezca una versión;
-- permitir volver a introducir la versión si es inválida.
-
-No debe entrar en ningún bucle infinito.
-
-2. EVITAR EL BUCLE ACTUAL
-
-Actualmente sucede esto:
-
-31
-1.7.10
-
-y después vuelve a aparecer el menú completo de versiones.
-
-Quiero que analices el código responsable de la selección de versiones y corrijas la lógica.
-
-La función debe devolver una única versión seleccionada al flujo principal.
-
-Por ejemplo conceptualmente:
-
-version = select_minecraft_version()
-
-y después:
-
-create_server(version)
-
-No quiero que "select_minecraft_version()" vuelva a ejecutarse accidentalmente después de haber recibido una versión válida.
-
-Busca especialmente:
-
-- bucles "while";
-- llamadas recursivas;
-- funciones que vuelven a llamar al selector;
-- validaciones que reinician incorrectamente el menú;
-- problemas con "return";
-- problemas con "input()";
-- errores al manejar la opción personalizada.
-
-3. MEJORAR LA INFORMACIÓN DEL COMANDO "mdserver"
-
-Actualmente el instalador muestra algo parecido a:
-
-Command: mdserver
-
-Esto no explica correctamente al usuario qué significa.
-
-Quiero reemplazarlo por un mensaje mucho más claro y profesional.
-
-Después de una instalación o actualización exitosa debe aparecer algo como:
-
-╔══════════════════════════════════════════════════════════╗
-║          ✓ MD SERVER LISTO PARA USAR                    ║
-╚══════════════════════════════════════════════════════════╝
-
-MD Server ha sido instalado/actualizado correctamente.
-
-🚀 Para abrir MD Server:
-   Escribe este comando en Termux:
-
-   mdserver
-
-Puedes ejecutar "mdserver" desde cualquier carpeta.
-No necesitas entrar manualmente a la carpeta MD-Server.
-
-Ejemplo:
-
-   $ mdserver
-
-¿Es la primera vez que lo utilizas?
-Ejecuta "mdserver" y sigue el asistente para crear tu servidor.
-
-Hazlo todavía más claro si encuentras una mejor presentación.
-
-El usuario debe entender inmediatamente:
-
-"mdserver" ES EL COMANDO PRINCIPAL QUE DEBE ESCRIBIR PARA ABRIR EL PROGRAMA.
-
-No quiero que parezca un nombre interno del proyecto.
-
-4. MENSAJE DESPUÉS DE ACTUALIZAR
-
-Cuando el usuario vuelva a ejecutar:
-
-curl -fsSL https://raw.githubusercontent.com/jephersonRD/MD-Server/main/install.sh | bash
-
-y ya tenga la última versión, mostrar:
-
-✓ MD Server ya está actualizado.
-
-Para abrir MD Server:
-
-   mdserver
-
-Si se actualizó correctamente:
-
-✓ MD Server ha sido actualizado correctamente.
-
-Para abrir MD Server:
-
-   mdserver
-
-5. MEJORAR EL INSTALADOR
-
-El instalador debe seguir siendo idempotente.
-
-Debe funcionar correctamente si:
-
-- MD-Server no está instalado;
-- MD-Server ya está instalado;
-- existe una versión antigua;
-- existe la v1.1.0;
-- existe la v1.1.1;
-- faltan dependencias;
-- el usuario ejecuta el instalador varias veces.
-
-No debe intentar clonar otra vez una carpeta existente.
-
-Debe detectar:
-
-instalación nueva
-instalación existente
-actualización
-reparación
-
-automáticamente.
-
-6. COMPROBAR EL COMANDO GLOBAL
-
-Asegúrate de que:
-
-mdserver
-
-funcione desde cualquier directorio.
+debe mostrar todos los servidores que el usuario haya creado.
 
 Por ejemplo:
 
-cd ~
-mdserver
+╭────────────────────────────────────────────────────╮
+│                  MIS SERVIDORES                    │
+├────────────────────────────────────────────────────┤
+│                                                    │
+│ [1] Survival 1.7.10                                │
+│     Minecraft 1.7.10 • Forge                       │
+│     ● OFFLINE                                      │
+│                                                    │
+│ [2] Survival 1.20.1                                │
+│     Minecraft 1.20.1 • Fabric                      │
+│     ● OFFLINE                                      │
+│                                                    │
+│ [3] Vanilla 1.21.1                                │
+│     Minecraft 1.21.1 • Vanilla                    │
+│     ● ONLINE                                       │
+│                                                    │
+│ [4] Volver                                         │
+╰────────────────────────────────────────────────────╯
 
-y:
+ADMINISTRAR UN SERVIDOR
 
-mkdir -p ~/test-mdserver
-cd ~/test-mdserver
-mdserver
+Al seleccionar un servidor debe aparecer:
 
-Deben abrir el programa.
+╭──────────────────────────────────────────────╮
+│        SURVIVAL 1.7.10                       │
+├──────────────────────────────────────────────┤
+│ [1] Iniciar servidor                          │
+│ [2] Detener servidor                          │
+│ [3] Consola                                   │
+│ [4] Información                               │
+│ [5] Configuración                             │
+│ [6] Eliminar servidor                         │
+│ [7] Volver                                    │
+╰──────────────────────────────────────────────╯
 
-El instalador debe crear correctamente el ejecutable/enlace necesario en "$PREFIX/bin" o utilizar el método más apropiado para Termux.
+ELIMINAR SERVIDOR
 
-No utilices rutas específicas de mi teléfono.
+La opción "[6] Eliminar servidor" debe ser muy clara.
 
-NO uses rutas como:
+Al seleccionarla:
 
-/data/data/com.termux/files/home
+⚠ ELIMINAR SERVIDOR
 
-codificadas directamente en el código.
+Estás a punto de eliminar:
 
-Utiliza variables como:
+Servidor: Survival 1.7.10
+Minecraft: 1.7.10
+Tipo: Forge
 
-$HOME
-$PREFIX
+Esto eliminará:
+• Mundo
+• Configuración
+• Mods
+• Plugins
+• Archivos del servidor
 
-cuando corresponda.
+⚠ ESTA ACCIÓN NO SE PUEDE DESHACER.
 
-7. COMPATIBILIDAD CON PYTHON
+¿Quieres continuar?
 
-Actualmente estoy utilizando Python 3.13 en Termux.
+[1] Sí, eliminar
+[2] Cancelar
 
-Verifica todo el proyecto para asegurarte de que sea compatible con Python moderno.
+No debe eliminar nada sin confirmación explícita.
 
-Comprueba:
+SEGURIDAD CONTRA BORRADOS ACCIDENTALES
 
-requirements.txt
-main.py
-scripts de instalación
-scripts auxiliares
+Si el usuario selecciona eliminar:
 
-No agregues dependencias innecesarias.
+[1] Sí, eliminar
 
-8. CORREGIR LA OBTENCIÓN DE VERSIONES
+pedir una segunda confirmación:
 
-Actualmente aparece:
+Escribe ELIMINAR para confirmar:
+>
 
-✗ No se pudieron obtener versiones de Mojang.
-Usando lista por defecto.
+Solo si el usuario escribe exactamente:
 
-Investiga por qué ocurre.
+ELIMINAR
 
-Quiero que el programa:
+se debe proceder.
 
-1. Intente obtener las versiones disponibles de Minecraft.
-2. Si la API no responde, utilice una lista local de respaldo.
-3. Nunca bloquee el programa.
-4. Nunca entre en un bucle infinito.
-5. Permita seleccionar manualmente una versión aunque no esté en la lista.
-6. Muestre claramente cuándo está utilizando la lista de respaldo.
+Si escribe cualquier otra cosa:
 
-La versión personalizada debe funcionar independientemente de que Mojang haya respondido o no.
+✓ Eliminación cancelada.
 
-9. SOPORTE PARA VERSIONES ANTIGUAS
+SERVIDOR EN EJECUCIÓN
 
-Es especialmente importante conservar soporte para versiones antiguas como:
+Si el usuario intenta eliminar un servidor que está ONLINE:
 
-1.7.10
-1.8.9
-1.12.2
-1.16.5
+⚠ ESTE SERVIDOR ESTÁ ACTUALMENTE EN EJECUCIÓN.
 
-No elimines accidentalmente soporte existente para versiones antiguas.
+Debes detenerlo antes de eliminarlo.
 
-Ten en cuenta que Forge/Fabric/Vanilla tienen métodos de instalación diferentes según la versión.
+[1] Detener servidor y continuar
+[2] Cancelar
 
-Si una combinación específica no es compatible, el programa debe mostrar un mensaje claro explicando el motivo en lugar de fallar silenciosamente.
+Nunca eliminar directamente los archivos de un servidor que está ejecutándose.
 
-10. MEJORAR LOS MENSAJES DEL CLI
+DESPUÉS DE ELIMINAR
 
-Quiero que MD-Server tenga una experiencia de usuario profesional.
+Mostrar:
 
-Los mensajes deben indicar claramente:
+✓ Servidor eliminado correctamente.
 
-✓ Éxito
-ℹ Información
-⚠ Advertencia
-✗ Error
+El servidor "Survival 1.7.10" y sus archivos han sido eliminados.
 
-Evita mensajes técnicos innecesarios para usuarios normales.
+Después regresar automáticamente a:
 
-Los errores técnicos completos pueden mostrarse solamente cuando sea necesario para depuración.
+MIS SERVIDORES
 
-11. VERSIONADO
+y actualizar la lista.
 
-Actualiza el proyecto a:
+CONSERVAR LOS DEMÁS SERVIDORES
 
-v1.1.1
+MUY IMPORTANTE:
 
-Actualiza todas las referencias de versión que existan en:
+Si existen:
 
-README.md
-main.py
-install.sh
-scripts
-package/config files
+Servidor A
+Servidor B
+Servidor C
 
-si corresponde.
+y el usuario elimina:
 
-No cambies referencias que pertenezcan a versiones de Minecraft.
+Servidor B
 
-Quiero diferenciar claramente:
+solamente debe eliminarse el servidor B.
 
-MD-Server v1.1.1
+Nunca:
 
-de:
+- borrar toda la carpeta de servidores;
+- borrar otros mundos;
+- borrar configuraciones globales;
+- borrar mods compartidos si pertenecen a otros servidores;
+- borrar instalaciones de Java;
+- borrar MD-Server.
 
-Minecraft 1.7.10
+ESTRUCTURA DE DATOS
 
-12. README.md
+Diseña una estructura clara para identificar los servidores.
 
-Actualiza el README para explicar claramente:
+Por ejemplo:
 
-Instalación
+~/MD-Server/
+    ...
+    
+~/MD-Servers/
+    survival-1-7-10/
+        server.properties
+        world/
+        mods/
+        logs/
+        server.jar
 
-curl -fsSL https://raw.githubusercontent.com/jephersonRD/MD-Server/main/install.sh | bash
+    survival-1-20-1/
+        server.properties
+        world/
+        mods/
+        logs/
+        server.jar
 
-Abrir MD-Server
+O utiliza la estructura actual del proyecto si ya existe una arquitectura mejor.
 
-mdserver
+No rompas las instalaciones existentes.
 
-Explica claramente que:
+Si actualmente MD-Server guarda los servidores en otra ubicación, adapta esta funcionalidad a la estructura existente.
 
-«"mdserver" es el comando global utilizado para abrir MD-Server desde cualquier directorio de Termux.»
+SERVIDORES EXISTENTES
 
-Actualizar
+La nueva versión debe detectar automáticamente los servidores que ya fueron creados con versiones anteriores de MD-Server.
 
-curl -fsSL https://raw.githubusercontent.com/jephersonRD/MD-Server/main/install.sh | bash
+No quiero que el usuario tenga que crearlos nuevamente después de actualizar a v1.1.1.
 
-El mismo instalador debe detectar automáticamente que existe una instalación y actualizarla.
+RENOMBRAR SERVIDOR
 
-Reparar
+También sería útil añadir:
 
-Explica cómo volver a ejecutar el instalador si una instalación está dañada.
+[5] Renombrar servidor
 
-13. PRUEBAS OBLIGATORIAS
+para que el usuario pueda cambiar:
 
-Antes de terminar, prueba mentalmente y, si tienes capacidad para hacerlo, ejecuta pruebas reales para estos casos:
+Mi servidor
 
-Caso A
+por:
 
-Instalación nueva.
+Survival con amigos
 
-Caso B
+sin modificar accidentalmente los archivos internos.
 
-Instalación existente.
+INFORMACIÓN
 
-Caso C
+La opción "Información" debería mostrar:
 
-Actualizar una versión antigua.
+╭──────────────────────────────────────────────╮
+│ INFORMACIÓN DEL SERVIDOR                     │
+├──────────────────────────────────────────────┤
+│ Nombre:       Survival con amigos             │
+│ Minecraft:    1.7.10                          │
+│ Tipo:         Forge                            │
+│ Estado:       ● OFFLINE                       │
+│ Puerto:       25565                           │
+│ Carpeta:      ~/MD-Servers/survival-1-7-10    │
+╰──────────────────────────────────────────────╯
 
-Caso D
+Cuando esté ONLINE, mostrar también las direcciones:
 
-Ejecutar el instalador dos veces seguidas.
+Local:
+127.0.0.1:25565
 
-Caso E
+Red local:
+192.168.x.x:25565
 
-Ejecutar:
+Internet:
+<dirección del túnel si está configurado>
 
-mdserver
+OBJETIVO
 
-desde "$HOME".
+Quiero que MD-Server deje de ser solamente un instalador/creador de servidores y se convierta en un verdadero administrador de servidores Minecraft para Termux/Android.
 
-Caso F
+El usuario debe poder:
 
-Ejecutar:
+- Crear servidores.
+- Ver sus servidores.
+- Iniciar servidores.
+- Detener servidores.
+- Acceder a la consola.
+- Ver IP y puerto.
+- Configurar servidores.
+- Renombrar servidores.
+- Eliminar servidores.
+- Gestionar varios servidores independientemente.
 
-cd /tmp
-mdserver
-
-o desde cualquier otra carpeta disponible en Termux.
-
-Caso G
-
-Seleccionar:
-
-Forge
-→ Otra versión
-→ 1.7.10
-
-Debe continuar sin volver al menú.
-
-Caso H
-
-Seleccionar:
-
-Forge
-→ Otra versión
-→ 1.12.2
-
-Debe continuar sin volver al menú.
-
-Caso I
-
-Introducir una versión inválida.
-
-Debe mostrar un error y permitir introducir otra.
-
-Caso J
-
-La API de Mojang no responde.
-
-Debe utilizar el fallback y permitir igualmente introducir una versión personalizada.
-
-14. IMPORTANTE
-
-No quiero una explicación teórica de lo que habría que hacer.
-
-Quiero que:
-
-1. Analices el repositorio.
-2. Identifiques los errores.
-3. Modifiques directamente los archivos necesarios.
-4. Corrijas el flujo del selector.
-5. Mejores el instalador.
-6. Mejores los mensajes.
-7. Actualices el README.
-8. Actualices la versión a v1.1.1.
-9. Compruebes que no se rompa la compatibilidad existente.
-10. Dejes el proyecto listo para hacer commit y publicar la nueva versión.
-
-Antes de finalizar, revisa especialmente que después de seleccionar:
-
-31 → 1.7.10
-
-el programa NO vuelva a mostrar el selector de versiones y continúe con el siguiente paso del proceso de creación del servidor.
+Todo debe funcionar desde la interfaz de MD-Server sin que el usuario tenga que navegar manualmente por las carpetas de Termux.
+eso si no rompas lo que ya esta hecho solo adaptolo para que sea mejor 
