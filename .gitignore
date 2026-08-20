@@ -5,4 +5,4 @@ __pycache__/
 *.deb
 *.jar.part
 .idea/
-.vscode/
+.vscode/Error

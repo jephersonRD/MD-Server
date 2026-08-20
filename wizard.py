@@ -12,18 +12,57 @@ from ui import menus, progress
 console = Console()
 
 
+def _pick_version(versions):
+    PAGE = 30
+    offset = 0
+    while True:
+        chunk = versions[offset:offset + PAGE]
+        opts = [(v,) for v in chunk]
+        more = offset + PAGE < len(versions)
+        if more:
+            opts.append(("… Versiones más antiguas",))
+        opts.append(("✎ Otra versión (escribe el número, ej. 1.7.10)",))
+        if offset > 0:
+            opts.append(("← Volver a versiones más recientes",))
+        i = int(menus.ask(t("wizard.version"), opts))
+        if i <= len(chunk):
+            return chunk[i - 1]
+        idx = i - len(chunk)  # 1-based index within the extra options
+        if more:
+            if idx == 1:
+                offset += PAGE
+                continue
+            if idx == 2:
+                v = menus.input_text(t("wizard.version"), default="")
+                if v in versions:
+                    return v
+                menus.error(f"{t('wizard.version_error')} ({v})")
+                continue
+            offset = max(0, offset - PAGE)
+            continue
+        # last page (no more older versions)
+        if idx == 1:
+            v = menus.input_text(t("wizard.version"), default="")
+            if v in versions:
+                return v
+            menus.error(f"{t('wizard.version_error')} ({v})")
+            continue
+        if idx == 2:
+            offset = max(0, offset - PAGE)
+            continue
+
+
 def run_wizard(auto_ram=None):
     """Guided server creation. Returns (server_name, meta)."""
     menus.title(t("wizard.title"))
 
-    srv_type = menus.ask(
+    i = int(menus.ask(
         t("wizard.type"),
-        [
-            ("vanilla", t("wizard.vanilla"), t("wizard.vanilla_desc")),
-            ("fabric", t("wizard.fabric"), t("wizard.fabric_desc")),
-            ("forge", t("wizard.forge"), t("wizard.forge_desc")),
-        ],
-    )
+        [(t("wizard.vanilla"), t("wizard.vanilla_desc")),
+         (t("wizard.fabric"), t("wizard.fabric_desc")),
+         (t("wizard.forge"), t("wizard.forge_desc"))],
+    ))
+    srv_type = ["vanilla", "fabric", "forge"][i - 1]
 
     # versions
     console.print(f"[dim]{t('wizard.version_fetching')}[/dim]")
@@ -32,7 +71,7 @@ def run_wizard(auto_ram=None):
             versions = version_manager.fetch_vanilla_versions()
         else:
             versions = version_manager.fetch_vanilla_versions()[:30]
-    version = menus.ask(t("wizard.version"), [(v, v) for v in versions[:40]], prompt="> ")
+    version = _pick_version(versions)
 
     # RAM
     dev = device_info.collect()
@@ -40,14 +79,15 @@ def run_wizard(auto_ram=None):
         auto_ram = memory_manager.recommend_ram(dev["ram_total"], dev["ram_available"])
     ram_mb = None
     if auto_ram > 0:
-        choice = menus.ask(
+        i = int(menus.ask(
             f"{t('wizard.ram_title')}: [bold cyan]{auto_ram} MB[/bold cyan]",
-            [("rec", t("wizard.ram_recommended")), ("manual", t("wizard.ram_manual"))],
-        )
-        if choice == "rec":
+            [(f"{t('wizard.ram_recommended')} ({auto_ram} MB)",),
+             (t("wizard.ram_manual"),)],
+        ))
+        if i == 1:
             ram_mb = auto_ram
     if ram_mb is None:
-        ram_mb = menus.input_int(t("wizard.ram_prompt"), default=auto_ram or 2048, minimum=1024)
+        ram_mb = menus.input_int(t("wizard.ram_prompt") + " (MB)", default=auto_ram or 2048, minimum=1024)
         if memory_manager.is_dangerous(ram_mb, dev["ram_total"], dev["ram_available"]):
             menus.warning(t("wizard.ram_warning"))
         elif memory_manager.is_too_low(ram_mb, version):

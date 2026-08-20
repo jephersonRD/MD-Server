@@ -158,11 +158,14 @@ def external(name, port):
         open_steps(t("net.playit_how"), t("net.playit_steps"))
         return
     menus.info(t("net.none_installed"))
-    choice = menus.ask(t("net.external_desc"), [("pi", t("net.install_playit")), ("ts", t("net.install_tailscale")), ("b", t("common.cancel"))])
-    if choice == "b":
+    choice = menus.ask(t("net.external_desc"),
+                       [(t("net.install_playit"),),
+                        (t("net.install_tailscale"),),
+                        (t("common.cancel"),)])
+    if choice == "3":
         return
     with console.status(f"{t('install.pkg')} ..."):
-        r = os.system(f"pkg install -y {'playit-by-playit' if choice == 'pi' else 'tailscale'}")
+        r = os.system(f"pkg install -y {'playit-by-playit' if choice == '1' else 'tailscale'}")
     if r == 0:
         menus.success("Installed")
         open_steps(t("net.playit_how"), t("net.playit_steps"))
@@ -181,14 +184,14 @@ def settings_menu(name):
         menus.warning(t("key.saved"))
     p = lambda k, d: server_manager.read_property(sdir, k, d)
     opts = [
-        ("1", f"{t('settings.motd')}: [dim]{p('motd', '')}[/dim]"),
-        ("2", f"{t('settings.max_players')}: [dim]{p('max-players', '10')}[/dim]"),
-        ("3", f"{t('settings.gamemode')}: [dim]{p('gamemode', 'survival')}[/dim]"),
-        ("4", f"{t('settings.difficulty')}: [dim]{p('difficulty', 'easy')}[/dim]"),
-        ("5", f"{t('settings.pvp')}: [dim]{p('pvp', 'true')}[/dim]"),
-        ("6", f"{t('settings.online_mode')}: [dim]{p('online-mode', 'false')}[/dim]"),
-        ("7", t("settings.open_properties")),
-        ("b", f"← {t('menu.back')}"),
+        (f"{t('settings.motd')}: [dim]{p('motd', '')}[/dim]",),
+        (f"{t('settings.max_players')}: [dim]{p('max-players', '10')}[/dim]",),
+        (f"{t('settings.gamemode')}: [dim]{p('gamemode', 'survival')}[/dim]",),
+        (f"{t('settings.difficulty')}: [dim]{p('difficulty', 'easy')}[/dim]",),
+        (f"{t('settings.pvp')}: [dim]{p('pvp', 'true')}[/dim]",),
+        (f"{t('settings.online_mode')}: [dim]{p('online-mode', 'false')}[/dim]",),
+        (t("settings.open_properties"),),
+        (f"← {t('menu.back')}",),
     ]
     choice = menus.ask(t("settings.title"), opts)
     props = {}
@@ -197,11 +200,13 @@ def settings_menu(name):
     elif choice == "2":
         props["max-players"] = menus.input_int(t("settings.max_players"), default=int(p("max-players", "10")), minimum=1, maximum=100)
     elif choice == "3":
-        g = menus.ask(t("settings.gamemode"), [("survival", "Survival"), ("creative", "Creative"), ("adventure", "Adventure"), ("spectator", "Spectator")])
-        props["gamemode"] = g
+        i = int(menus.ask(t("settings.gamemode"),
+                          [("Survival",), ("Creative",), ("Adventure",), ("Spectator",)]))
+        props["gamemode"] = ["survival", "creative", "adventure", "spectator"][i - 1]
     elif choice == "4":
-        d = menus.ask(t("settings.difficulty"), [("peaceful", "Peaceful"), ("easy", "Easy"), ("normal", "Normal"), ("hard", "Hard")])
-        props["difficulty"] = d
+        i = int(menus.ask(t("settings.difficulty"),
+                          [("Peaceful",), ("Easy",), ("Normal",), ("Hard",)]))
+        props["difficulty"] = ["peaceful", "easy", "normal", "hard"][i - 1]
     elif choice == "5":
         props["pvp"] = menus.confirm(t("settings.pvp"), default_yes=p("pvp", "true") == "true")
         props["pvp"] = "true" if props["pvp"] else "false"
@@ -212,7 +217,7 @@ def settings_menu(name):
         print_path = os.path.join(sdir, "server.properties")
         menus.info(print_path)
         return
-    elif choice == "b":
+    elif choice == "8":
         return
     if props:
         server_manager.write_properties(sdir, name, props)
@@ -223,11 +228,11 @@ def settings_menu(name):
 def backup_menu(name):
     while True:
         opts = [
-            ("1", t("backup.create")),
-            ("2", t("backup.restore")),
-            ("3", t("backup.delete")),
-            ("4", t("backup.auto")),
-            ("b", f"← {t('menu.back')}"),
+            (t("backup.create"),),
+            (t("backup.restore"),),
+            (t("backup.delete"),),
+            (t("backup.auto"),),
+            (f"← {t('menu.back')}",),
         ]
         choice = menus.ask(f"💾 {t('backup.title')}", opts)
         if choice == "1":
@@ -242,12 +247,13 @@ def backup_menu(name):
             if not backups:
                 menus.info(t("backup.none"))
                 continue
-            items = [(os.path.basename(b), f"{os.path.basename(b)}  [dim]{backup_manager.human_size(b)}[/dim]") for b in backups]
-            b = menus.ask(t("backup.restore"), items + [("b", t("common.cancel"))])
-            if b == "b":
+            opts = [(f"{os.path.basename(b)}  [dim]{backup_manager.human_size(b)}[/dim]",) for b in backups]
+            opts.append((t("common.cancel"),))
+            n = int(menus.ask(t("backup.restore"), opts))
+            if n == len(backups) + 1:
                 continue
-            target = next((x for x in backups if os.path.basename(x) == b), None)
-            if target and menus.confirm(t("backup.restore_confirm")):
+            target = backups[n - 1]
+            if menus.confirm(t("backup.restore_confirm")):
                 if backup_manager.restore_backup(name, target):
                     menus.success(t("backup.restored"))
                 else:
@@ -257,12 +263,13 @@ def backup_menu(name):
             if not backups:
                 menus.info(t("backup.none"))
                 continue
-            items = [(os.path.basename(b), os.path.basename(b)) for b in backups]
-            b = menus.ask(t("backup.delete"), items + [("b", t("common.cancel"))])
-            if b == "b":
+            opts = [(os.path.basename(b),) for b in backups]
+            opts.append((t("common.cancel"),))
+            n = int(menus.ask(t("backup.delete"), opts))
+            if n == len(backups) + 1:
                 continue
-            target = next((x for x in backups if os.path.basename(x) == b), None)
-            if target and menus.confirm(t("backup.delete")):
+            target = backups[n - 1]
+            if menus.confirm(t("backup.delete")):
                 backup_manager.delete_backup(target)
                 menus.success(t("backup.deleted"))
         elif choice == "4":
@@ -281,7 +288,7 @@ def backup_menu(name):
                 config.save_server_meta(name, meta)
                 _start_auto(name, mins)
                 menus.success(f"{t('backup.auto_enabled')} {mins} min")
-        elif choice == "b":
+        elif choice == "5":
             return
 
 

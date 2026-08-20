@@ -38,32 +38,39 @@ def dashboard(name):
 
         opts = []
         if server_manager.get_process(name):
-            opts.append(("1", f"■ {t('menu.stop')}"))
-            opts.append(("2", f"↻ {t('menu.restart')}"))
-            opts.append(("3", f"⌥ {t('console.title')}"))
+            opts.append((f"■ {t('menu.stop')}",))
+            opts.append((f"↻ {t('menu.restart')}",))
+            opts.append((f"⌥ {t('console.title')}",))
         else:
-            opts.append(("1", f"▶ {t('menu.start')}"))
-            opts.append(("2", f"[dim]↻ {t('menu.restart')}[/dim]"))
-            opts.append(("3", f"[dim]⌥ {t('console.title')}[/dim]"))
+            opts.append((f"▶ {t('menu.start')}",))
+            opts.append((f"[dim]↻ {t('menu.restart')}[/dim]",))
+            opts.append((f"[dim]⌥ {t('console.title')}[/dim]",))
 
         srv_type = meta.get("type", "?")
-        opts.append(("4", f"🌍 {t('menu.world')}"))
-        opts.append(("5", f"🧩 {t('menu.mods')}"))
-        opts.append(("6", f"🔌 {t('menu.plugins')}"))
-        opts.append(("7", f"⚙ {t('menu.settings')}"))
-        opts.append(("8", f"💾 {t('menu.backups')}"))
-        opts.append(("9", f"📊 {t('menu.monitor')}"))
-        opts.append(("10", f"🌐 {t('menu.connection')}"))
-        opts.append(("11", f"📁 {t('menu.filemgr')}"))
-        opts.append(("12", t("change_lang")))
-        opts.append(("b", f"← {t('menu.back')}"))
-        opts.append(("q", t("menu.quit")))
+        opts.append((f"🌍 {t('menu.world')}",))
+        opts.append((f"🧩 {t('menu.mods')}",))
+        opts.append((f"🔌 {t('menu.plugins')}",))
+        opts.append((f"⚙ {t('menu.settings')}",))
+        opts.append((f"💾 {t('menu.backups')}",))
+        opts.append((f"📊 {t('menu.monitor')}",))
+        opts.append((f"🌐 {t('menu.connection')}",))
+        opts.append((f"📁 {t('menu.filemgr')}",))
+        opts.append((t("change_lang"),))
+        opts.append((f"← {t('menu.back')}",))
+        opts.append((t("menu.quit"),))
+        N_ACTIONS = 12
 
         console.print(Panel(header, border_style="bright_cyan",
                             title=f"[bold]MD SERVER — {name}[/bold]", padding=(0, 1)))
         choice = menus.ask(t("menu.main_title"), opts)
+        n = int(choice)
+        if n == N_ACTIONS + 1:
+            return
+        if n == N_ACTIONS + 2:
+            console.print(f"[bold cyan]{t('exit.bye')}[/bold cyan]")
+            raise SystemExit(0)
 
-        if choice == "1":
+        if n == 1:
             if server_manager.get_process(name):
                 server_manager.stop_server(name)
                 menus.success(t("stop.done"))
@@ -73,43 +80,38 @@ def dashboard(name):
                     run_console(name)
                 else:
                     menus.error("Failed to start (server.jar missing / RAM too low?)")
-        elif choice == "2":
+        elif n == 2:
             if not server_manager.get_process(name):
                 menus.warning(t("console.not_running"))
                 continue
             menus.info(t("restart.restarting"))
             server_manager.restart_server(name)
             run_console(name)
-        elif choice == "3":
+        elif n == 3:
             if not server_manager.get_process(name):
                 menus.warning(t("console.not_running"))
                 continue
             run_console(name)
-        elif choice == "4":
+        elif n == 4:
             world_menu(name)
-        elif choice == "5":
+        elif n == 5:
             from managers import mod_manager
             mod_menu(name, mod_manager)
-        elif choice == "6":
+        elif n == 6:
             from managers import plugin_manager
             plugin_menu(name, srv_type, plugin_manager)
-        elif choice == "7":
+        elif n == 7:
             settings_menu(name)
-        elif choice == "8":
+        elif n == 8:
             backup_menu(name)
-        elif choice == "9":
+        elif n == 9:
             monitor(name, meta)
-        elif choice == "10":
+        elif n == 10:
             connection(name, meta)
-        elif choice == "11":
+        elif n == 11:
             file_manager(name)
-        elif choice == "12":
+        elif n == 12:
             change_language()
-        elif choice == "b":
-            return
-        elif choice == "q":
-            console.print(f"[bold cyan]{t('exit.bye')}[/bold cyan]")
-            raise SystemExit(0)
 
 
 def world_menu(name):
@@ -147,9 +149,11 @@ def world_menu(name):
             if not worlds:
                 menus.info(t("world.none"))
                 continue
-            w = menus.ask(t("world.delete"), [(x, x) for x in worlds] + [("b", t("common.cancel"))])
-            if w == "b":
+            opts = [(x,) for x in worlds] + [(t("common.cancel"),)]
+            n = int(menus.ask(t("world.delete"), opts))
+            if n == len(worlds) + 1:
                 continue
+            w = worlds[n - 1]
             if menus.confirm(f"{t('world.deleted_confirm')} [bold]{w}[/bold]"):
                 if world_manager.delete_world(name, w):
                     menus.success(t("world.deleted"))
@@ -158,9 +162,11 @@ def world_menu(name):
             if not worlds:
                 menus.info(t("world.none"))
                 continue
-            w = menus.ask(t("world.backup"), [(x, x) for x in worlds] + [("b", t("common.cancel"))])
-            if w == "b":
+            opts = [(x,) for x in worlds] + [(t("common.cancel"),)]
+            n = int(menus.ask(t("world.backup"), opts))
+            if n == len(worlds) + 1:
                 continue
+            w = worlds[n - 1]
             arc = world_manager.backup_world(name, w, config.BACKUPS_DIR)
             menus.success(f"{t('backup.created')}: {os.path.basename(arc)}")
         elif choice == "5":
@@ -172,9 +178,11 @@ def world_menu(name):
             if not arcs:
                 menus.warning(t("backup.none"))
                 continue
-            arc = menus.ask(t("world.restore"), [(a, a) for a in arcs] + [("b", t("common.cancel"))])
-            if arc == "b":
+            opts = [(a,) for a in arcs] + [(t("common.cancel"),)]
+            n = int(menus.ask(t("world.restore"), opts))
+            if n == len(arcs) + 1:
                 continue
+            arc = arcs[n - 1]
             target = config.safe_name(arc.split("_")[0])
             if menus.confirm(f"{t('world.restore')}: {arc}"):
                 if world_manager.restore_world(name, target, os.path.join(src_dir, arc)):
@@ -187,13 +195,15 @@ def world_menu(name):
             if not worlds:
                 menus.info(t("world.none"))
                 continue
-            w = menus.ask(t("world.active"), [(x, x) for x in worlds] + [("b", t("common.cancel"))])
-            if w == "b":
+            opts = [(x,) for x in worlds] + [(t("common.cancel"),)]
+            n = int(menus.ask(t("world.active"), opts))
+            if n == len(worlds) + 1:
                 continue
+            w = worlds[n - 1]
             world_manager.set_active_world(name, w)
             menus.success(f"{t('world.set_active')} {w}")
             menus.info(t("key.saved"))
-        elif choice == "b":
+        elif choice == "7":
             return
 
 
@@ -204,12 +214,12 @@ def mod_menu(name, mod_manager):
         return
     while True:
         opts = [
-            ("1", t("mod.install")),
-            ("2", t("mod.remove")),
-            ("3", t("mod.list")),
-            ("4", t("mod.open")),
-            ("5", t("mod.import")),
-            ("b", f"← {t('menu.back')}"),
+            (t("mod.install"),),
+            (t("mod.remove"),),
+            (t("mod.list"),),
+            (t("mod.open"),),
+            (t("mod.import"),),
+            (f"← {t('menu.back')}",),
         ]
         choice = menus.ask(f"🧩 {t('mod.title')}", opts)
         if choice == "1":
@@ -220,9 +230,11 @@ def mod_menu(name, mod_manager):
             if not mods:
                 menus.info(t("mod.none"))
                 continue
-            m = menus.ask(t("mod.remove"), [(x, x) for x in mods] + [("b", t("common.cancel"))])
-            if m == "b":
+            opts = [(x,) for x in mods] + [(t("common.cancel"),)]
+            n = int(menus.ask(t("mod.remove"), opts))
+            if n == len(mods) + 1:
                 continue
+            m = mods[n - 1]
             if mod_manager.remove_mod(name, m):
                 menus.success(f"{t('mod.removed')}: {m}")
         elif choice == "3":
@@ -250,7 +262,7 @@ def mod_menu(name, mod_manager):
                 menus.info(config.IMPORT_MODS)
             else:
                 menus.success(f"{len(imported)} {t('mod.imported')}")
-        elif choice == "b":
+        elif choice == "6":
             return
 
 
@@ -260,12 +272,12 @@ def plugin_menu(name, srv_type, plugin_manager):
         return
     while True:
         opts = [
-            ("1", t("mod.install")),
-            ("2", t("mod.remove")),
-            ("3", t("mod.list")),
-            ("4", t("mod.open")),
-            ("5", t("mod.import")),
-            ("b", f"← {t('menu.back')}"),
+            (t("mod.install"),),
+            (t("mod.remove"),),
+            (t("mod.list"),),
+            (t("mod.open"),),
+            (t("mod.import"),),
+            (f"← {t('menu.back')}",),
         ]
         choice = menus.ask(f"🔌 {t('plugin.title')}", opts)
         if choice in ("1", "4"):
@@ -275,8 +287,12 @@ def plugin_menu(name, srv_type, plugin_manager):
             if not pl:
                 menus.info(t("mod.none"))
                 continue
-            p = menus.ask(t("mod.remove"), [(x, x) for x in pl] + [("b", t("common.cancel"))])
-            if p != "b" and menus.confirm(t("mod.remove")):
+            opts = [(x,) for x in pl] + [(t("common.cancel"),)]
+            n = int(menus.ask(t("mod.remove"), opts))
+            if n == len(pl) + 1:
+                continue
+            p = pl[n - 1]
+            if menus.confirm(t("mod.remove")):
                 os.remove(os.path.join(plugin_manager.plugins_dir(name), p))
                 menus.success(t("mod.removed"))
         elif choice == "3":
@@ -288,13 +304,13 @@ def plugin_menu(name, srv_type, plugin_manager):
         elif choice == "5":
             menus.info(t("mod.install_hint"))
             menus.info(plugin_manager.plugins_dir(name))
-        elif choice == "b":
+        elif choice == "6":
             return
 
 
 def change_language():
     from core import i18n
-    opts = [("es", t("lang_es")), ("en", t("lang_en"))]
-    lang = menus.ask(t("lang_title"), opts)
+    opts = [(f"🇪🇸  {t('lang_es')}",), (f"🇺🇸  {t('lang_en')}",)]
+    lang = "es" if menus.ask(t("lang_title"), opts) == "1" else "en"
     i18n.load(lang)
     menus.success(t("lang.changed"))

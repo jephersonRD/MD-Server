@@ -18,10 +18,9 @@ console = Console()
 def choose_language():
     lang = menus.ask(
         i18n.t("lang_title", "Select language / Selecciona el idioma"),
-        [("es", i18n.t("lang_es", "Español") + "  🇪🇸"),
-         ("en", i18n.t("lang_en", "English") + "  🇺🇸")],
+        [("🇪🇸  Español",), ("🇺🇸  English",)],
     )
-    i18n.load(lang)
+    i18n.load("es" if lang == "1" else "en")
 
 
 def show_device_analysis():
@@ -63,10 +62,10 @@ def first_run_question():
                         border_style="magenta", padding=(1, 2)))
     choice = menus.ask(
         i18n.t("firstrun.title"),
-        [("no", i18n.t("firstrun.no_existing")),
-         ("yes", i18n.t("firstrun.yes_new"))],
+        [(i18n.t("firstrun.no_existing"),),
+         (i18n.t("firstrun.yes_new"),)],
     )
-    return choice == "yes"
+    return choice == "2"
 
 
 def select_server_or_new():
@@ -74,38 +73,41 @@ def select_server_or_new():
     while True:
         console.clear()
         banner.show(console)
-        if not servers:
-            menu_opt = [("n", i18n.t("menu.create_new")),
-                        ("l", i18n.t("change_lang")),
-                        ("q", i18n.t("menu.quit"))]
-        else:
-            menu_opt = [("r", f"▶ {i18n.t('firstrun.no_existing')}")]
+        menu_opt = []
+        idx_resume = None
+        if servers:
+            menu_opt.append((f"▶ {i18n.t('firstrun.no_existing')} ({servers[0]})",))
+            idx_resume = 1
             for s in servers:
                 meta = config.load_server_meta(s)
                 st = "●" if _server_running(s) else "○"
-                menu_opt.append((s, f"{st} {s}  [dim]{meta.get('version','?')} · {meta.get('type','?').title()}[/dim]"))
-            menu_opt.append(("n", f"+ {i18n.t('menu.create_new')}"))
-            menu_opt.append(("l", i18n.t("change_lang")))
-            menu_opt.append(("q", i18n.t("menu.quit")))
+                menu_opt.append((f"{st} {s}  [dim]{meta.get('version','?')} · {meta.get('type','?').title()}[/dim]",))
+        menu_opt.append((f"✚ {i18n.t('menu.create_new')}",))
+        idx_new = len(menu_opt)
+        menu_opt.append((i18n.t("change_lang"),))
+        idx_lang = len(menu_opt)
+        menu_opt.append((i18n.t("menu.quit"),))
+        idx_quit = len(menu_opt)
+
         choice = menus.ask(i18n.t("menu.select_server"), menu_opt)
-        if choice in ("q", "quit", "exit"):
+        n = int(choice)
+        if n == idx_quit:
             console.print(f"[bold cyan]{i18n.t('exit.bye')}[/bold cyan]")
             return None
-        if choice == "n":
+        if n == idx_lang:
+            choose_language()
+            continue
+        if n == idx_new:
             from wizard import run_wizard
             name, meta = run_wizard()
             if name and name in config.list_servers():
                 return name
             continue
-        if choice == "l":
-            choose_language()
-            continue
-        if choice == "r" and servers:
-            # resume most recently modified server
+        if idx_resume and n == idx_resume:
             _resume(servers)
             return None
-        if choice in servers:
-            return choice
+        if servers and 2 <= n < idx_new:
+            return servers[n - 2]
 
 
 def _server_running(name):

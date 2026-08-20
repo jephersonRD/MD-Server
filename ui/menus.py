@@ -7,31 +7,38 @@ console = Console()
 
 
 def ask(question: str, options: list, prompt="> ", allow_custom=False, multiple=False):
-    """Simple interactive menu. options: list of (key, label) or list of (key, label, desc)."""
+    """Simple interactive menu with auto-numbering.
+
+    options: list of (label) or (label, desc). Returns the 1-based index as a
+    string (e.g. "1"). If allow_custom is True, any non-numeric input is
+    returned as-is (for typing a version, name, etc.).
+    """
     console.print()
     console.print(Panel(f"[bold]{question}[/bold]", border_style="cyan", padding=(0, 1)))
     for idx, opt in enumerate(options, 1):
-        key = opt[0]
-        label = opt[1]
-        desc = opt[2] if len(opt) > 2 else ""
-        mark = "●" if is_running_marker(key) else "○"
-        if len(opt) > 2:
-            console.print(f"  [bold cyan][{key}][/bold cyan] {label}  [dim]- {desc}[/dim]")
+        if isinstance(opt, tuple):
+            label = opt[0]
+            desc = opt[1] if len(opt) > 1 else None
         else:
-            console.print(f"  [bold cyan][{key}][/bold cyan] {label}")
+            label = opt
+            desc = None
+        if desc:
+            console.print(f"  [bold cyan][{idx}][/bold cyan] {label}  [dim]- {desc}[/dim]")
+        else:
+            console.print(f"  [bold cyan][{idx}][/bold cyan] {label}")
     console.print()
     while True:
         choice = console.input(f"[bold cyan]{prompt}[/bold cyan]").strip().lower()
-        if allow_custom:
+        if allow_custom and not choice.isdigit():
             return choice
-        for opt in options:
-            if opt[0].lower() == choice:
-                return opt[0]
-        console.print("[red]Invalid option.[/red]")
-
-
-def is_running_marker(key: str) -> bool:
-    return False
+        try:
+            n = int(choice)
+        except ValueError:
+            console.print("[red]Invalid option. Choose a number.[/red]")
+            continue
+        if 1 <= n <= len(options):
+            return str(n)
+        console.print("[red]Invalid option. Choose a number.[/red]")
 
 
 def confirm(msg: str, default_yes=True) -> bool:
