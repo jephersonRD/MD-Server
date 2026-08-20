@@ -33,7 +33,7 @@ def auto_update(argv=None, verbose=False):
     try:
         subprocess.run(
             ["git", "-C", APP_DIR, "fetch", "--depth", "1", "origin", __branch__],
-            capture_output=True, text=True, timeout=30,
+            capture_output=True, text=True, timeout=10,
         )
     except Exception:
         return  # offline or git error — run anyway
@@ -58,6 +58,8 @@ def auto_update(argv=None, verbose=False):
     print("\n\033[1;36m🔄 MD Server updated to the latest version.\033[0m\n")
     os.environ["MD_SERVER_UPDATED"] = "1"
     try:
+        sys.stdout.flush()
+        sys.stderr.flush()
         os.execv(sys.executable, [sys.executable, os.path.realpath(__file__)] + argv)
     except Exception:
         pass
