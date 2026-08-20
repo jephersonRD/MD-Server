@@ -28,8 +28,10 @@
 Copia este código en Termux y pulsa Enter (**este es el código que pegarás en Termux** / **this is the code you paste in Termux**):
 
 ```bash
-pkg update -y && pkg install -y git python && git clone --depth 1 https://github.com/jephersonRD/MD-Server.git && cd MD-Server && bash install.sh && mdserver
+pkg update -y && pkg install -y git python && cd ~ && if [ -d MD-Server/.git ]; then cd MD-Server && git pull --ff-only; else git clone --depth 1 https://github.com/jephersonRD/MD-Server.git && cd MD-Server; fi && bash install.sh && mdserver
 ```
+
+> ⚠️ Si ya habías instalado antes, **no es necesario borrar nada**: el comando detecta la carpeta existente y la actualiza automáticamente.
 
 > ℹ️ La primera vez te preguntará el idioma y guía todo el proceso.
 > La primera vez que uses el código, te preguntará si **es tu primera vez** o si **ya tienes un servidor** creado (para encenderlo directamente sin crear uno nuevo).
