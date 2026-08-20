@@ -12,6 +12,7 @@ from managers import world_manager
 from ui.manager_menus import (
     settings_menu, backup_menu, monitor, connection, file_manager,
 )
+from ui.my_servers import server_info, rename_server
 
 console = Console()
 
@@ -47,10 +48,13 @@ def dashboard(name):
             opts.append((f"[dim]⌥ {t('console.title')}[/dim]",))
 
         srv_type = meta.get("type", "?")
+        opts.append((f"ℹ {t('admin.info')}",))
         opts.append((f"🌍 {t('menu.world')}",))
         opts.append((f"🧩 {t('menu.mods')}",))
         opts.append((f"🔌 {t('menu.plugins')}",))
         opts.append((f"⚙ {t('menu.settings')}",))
+        opts.append((f"✎ {t('admin.rename')}",))
+        opts.append((f"🗑 {t('admin.delete')}",))
         opts.append((f"💾 {t('menu.backups')}",))
         opts.append((f"📊 {t('menu.monitor')}",))
         opts.append((f"🌐 {t('menu.connection')}",))
@@ -58,7 +62,7 @@ def dashboard(name):
         opts.append((t("change_lang"),))
         opts.append((f"← {t('menu.back')}",))
         opts.append((t("menu.quit"),))
-        N_ACTIONS = 12
+        N_ACTIONS = 16
 
         console.print(Panel(header, border_style="bright_cyan",
                             title=f"[bold]MD SERVER — {name}[/bold]", padding=(0, 1)))
@@ -93,24 +97,32 @@ def dashboard(name):
                 continue
             run_console(name)
         elif n == 4:
-            world_menu(name)
+            server_info(name)
         elif n == 5:
+            world_menu(name)
+        elif n == 6:
             from managers import mod_manager
             mod_menu(name, mod_manager)
-        elif n == 6:
+        elif n == 7:
             from managers import plugin_manager
             plugin_menu(name, srv_type, plugin_manager)
-        elif n == 7:
-            settings_menu(name)
         elif n == 8:
-            backup_menu(name)
+            settings_menu(name)
         elif n == 9:
-            monitor(name, meta)
+            rename_server(name)
         elif n == 10:
-            connection(name, meta)
+            from ui.my_servers import delete_server
+            if delete_server(name):
+                return
         elif n == 11:
-            file_manager(name)
+            backup_menu(name)
         elif n == 12:
+            monitor(name, meta)
+        elif n == 13:
+            connection(name, meta)
+        elif n == 14:
+            file_manager(name)
+        elif n == 15:
             change_language()
 
 

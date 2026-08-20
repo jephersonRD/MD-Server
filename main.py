@@ -2,7 +2,7 @@
 import os
 import sys
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 __repo__ = "jephersonRD/MD-Server"
 __branch__ = "main"
 
@@ -13,6 +13,7 @@ from rich.console import Console
 from rich.panel import Panel
 
 from core import config, device_info, i18n
+from core.i18n import t
 from ui import banner, menus
 from ui.dashboard import dashboard
 from ui.progress import human
@@ -106,79 +107,66 @@ def welcome():
     console.print()
 
 
-def first_run_question():
-    """Asks returning users whether to resume an existing server or start fresh."""
-    console.print(Panel(f"[bold]{i18n.t('firstrun.title')}[/bold]\n\n{i18n.t('firstrun.question')}",
-                        border_style="magenta", padding=(1, 2)))
-    choice = menus.ask(
-        i18n.t("firstrun.title"),
-        [(i18n.t("firstrun.no_existing"),),
-         (i18n.t("firstrun.yes_new"),)],
-    )
-    return choice == "2"
-
-
-def select_server_or_new():
-    servers = config.list_servers()
+def main_menu():
     while True:
         console.clear()
         banner.show(console)
-        menu_opt = []
-        idx_resume = None
-        if servers:
-            menu_opt.append((f"▶ {i18n.t('firstrun.no_existing')} ({servers[0]})",))
-            idx_resume = 1
-            for s in servers:
-                meta = config.load_server_meta(s)
-                st = "●" if _server_running(s) else "○"
-                menu_opt.append((f"{st} {s}  [dim]{meta.get('version','?')} · {meta.get('type','?').title()}[/dim]",))
-        menu_opt.append((f"✚ {i18n.t('menu.create_new')}",))
-        idx_new = len(menu_opt)
-        menu_opt.append((i18n.t("change_lang"),))
-        idx_lang = len(menu_opt)
-        menu_opt.append((i18n.t("menu.quit"),))
-        idx_quit = len(menu_opt)
-
-        choice = menus.ask(i18n.t("menu.select_server"), menu_opt)
+        choice = menus.ask(
+            t("main.title"),
+            [(f"✚ {t('main.create')}",),
+             (f"🖥 {t('main.my_servers')}",),
+             (f"⚙ {t('main.settings')}",),
+             (t("menu.quit"),)],
+        )
         n = int(choice)
-        if n == idx_quit:
-            console.print(f"[bold cyan]{i18n.t('exit.bye')}[/bold cyan]")
-            return None
-        if n == idx_lang:
-            choose_language()
+        if n == 4:
+            console.print(f"[bold cyan]{t('exit.bye')}[/bold cyan]")
+            return
+        if n == 3:
+            global_settings_menu()
             continue
-        if n == idx_new:
+        if n == 2:
+            from ui.my_servers import my_servers_menu
+            while True:
+                target = my_servers_menu()
+                if not target:
+                    break
+                console.clear()
+                banner.show(console)
+                dashboard(target)
+            continue
+        if n == 1:
             from wizard import run_wizard
-            name, meta = run_wizard()
+            name, _ = run_wizard()
             if name and name in config.list_servers():
-                return name
+                console.clear()
+                banner.show(console)
+                dashboard(name)
             continue
-        if idx_resume and n == idx_resume:
-            _resume(servers)
-            return None
-        if servers and 2 <= n < idx_new:
-            return servers[n - 2]
 
 
-def _server_running(name):
-    from core import server_manager
-    return server_manager.get_process(name) is not None
-
-
-def _latest_server(servers):
-    return max(servers, key=lambda s: os.path.getmtime(os.path.join(config.SERVERS_DIR, s, "mdserver.json")) or 0)
-
-
-def _resume(servers):
-    target = _latest_server(servers)
-    print()
-    console.print(f"[cyan]◈ [/cyan][bold]{target}[/bold]")
-    from core import server_manager
-    from ui.console_view import run_console
-    if not server_manager.start_server(target):
-        menus.error("Could not start the server.")
-    else:
-        run_console(target)
+def global_settings_menu():
+    while True:
+        console.clear()
+        banner.show(console)
+        choice = menus.ask(
+            t("main.settings"),
+            [(f"🌐 {t('change_lang')}",),
+             (f"🖥 {t('device_title')}",),
+             (f"🔄 {t('main.check_updates')}",),
+             (f"← {t('menu.back')}",)],
+        )
+        n = int(choice)
+        if n == 1:
+            choose_language()
+        elif n == 2:
+            show_device_analysis()
+            console.input("Enter ")
+        elif n == 3:
+            auto_update(["--check-update"], verbose=True)
+            console.input("Enter ")
+        else:
+            return
 
 
 def main():
@@ -204,7 +192,6 @@ def main():
             i18n.load(cfg.get("language", "es"))
 
         first_run = not cfg.get("first_run_done")
-        has_servers = bool(config.list_servers())
 
         if first_run:
             welcome()
@@ -216,31 +203,7 @@ def main():
             except (EOFError, KeyboardInterrupt):
                 pass
 
-        # First-use question per requirement: returning users may only want to boot an old server
-        if has_servers and first_run_question():
-            from wizard import run_wizard
-            name, _ = run_wizard()
-            if name in config.list_servers():
-                console.clear()
-                banner.show(console)
-                dashboard(name)
-            return
-
-        if has_servers:
-            target = select_server_or_new()
-            if not target:
-                return
-            console.clear()
-            banner.show(console)
-            dashboard(target)
-        else:
-            # No servers: straight into the create wizard
-            from wizard import run_wizard
-            name, _ = run_wizard()
-            if name in config.list_servers():
-                console.clear()
-                banner.show(console)
-                dashboard(name)
+        main_menu()
     except KeyboardInterrupt:
         console.print(f"\n[bold cyan]{i18n.t('exit.bye')}[/bold cyan]")
         sys.exit(0)

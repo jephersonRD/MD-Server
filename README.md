@@ -1,6 +1,6 @@
 <div align="center">
 
-![MD Server](https://img.shields.io/badge/MD%20Server-v1.1.1-cyan?style=for-the-badge)
+![MD Server](https://img.shields.io/badge/MD%20Server-v1.1.2-cyan?style=for-the-badge)
 [![Termux](https://img.shields.io/badge/Platform-Termux%20%28Android%29-3b9e46?style=for-the-badge)](https://termux.dev)
 [![Java](https://img.shields.io/badge/Java-21%20%2F%2017-e76f00?style=for-the-badge)](https://adoptium.net)
 [![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](LICENSE)
@@ -41,11 +41,10 @@ pkg update -y && pkg install -y git python && cd ~ && if [ -d MD-Server/.git ]; 
 
 > ⚠️ El instalador es **reutilizable y seguro**: puedes ejecutarlo todas las veces que quieras. Detecta si es la primera instalación, si ya tienes una versión antigua o nueva, si faltan dependencias o si una instalación quedó a medias, y lo resuelve automáticamente **sin borrar nunca tus servidores, mundos, mods ni ajustes** (esos viven en `~/mdserver/`, no en la carpeta del código).
 
-> ℹ️ La primera vez te preguntará el idioma y guía todo el proceso.
-> La primera vez que uses el código, te preguntará si **es tu primera vez** o si **ya tienes un servidor** creado (para encenderlo directamente sin crear uno nuevo).
-> ℹ️ On first use it asks for your language and guides you through the entire process.
+> ℹ️ La primera vez te preguntará el idioma y guía todo el proceso. Al abrir MD Server verás el menú principal: **[1] Crear servidor**, **[2] Mis servidores**, **[3] Configuración**, **[4] Salir**.
+> ℹ️ On first use it asks for your language and guides you through the entire process. When you open MD Server you'll see the main menu: **[1] Create Server**, **[2] My Servers**, **[3] Settings**, **[4] Exit**.
 >
-> 🆕 **v1.1.1**: selector de versiones corregido (escribe 1.7.10, 1.12.2, 1.16.5 sin volver al menú), mensajes claros cuando Mojang no responde (lista local de respaldo) y aviso si la versión requiere Java 8 (no disponible en Termux). **v1.1.0**: instalador y actualizador automático. **v1.0.1**: menús 100% numéricos y RAM por número.
+> 🆕 **v1.1.2**: gestión completa de servidores — menú principal con **Mis servidores** (ver, iniciar, detener, consola, información, configuración, renombrar y eliminar con doble confirmación). Detecta automáticamente los servidores creados en versiones anteriores. **v1.1.1**: selector de versiones corregido (escribe 1.7.10, 1.12.2, 1.16.5 sin volver al menú), mensajes claros cuando Mojang no responde (lista local de respaldo) y aviso si la versión requiere Java 8 (no disponible en Termux). **v1.1.0**: instalador y actualizador automático. **v1.0.1**: menús 100% numéricos y RAM por número.
 
 ---
 
@@ -90,6 +89,29 @@ mdserver
 - Las descargas se comprueban y el proceso se puede volver a ejecutar aunque hubo un error de red.
 
 ---
+
+## 🖥️ Mis servidores | My Servers
+
+Al abrir MD Server verás el menú principal:
+
+```
+[1] Crear servidor
+[2] Mis servidores
+[3] Configuración
+[4] Salir
+```
+
+Con **[2] Mis servidores** puedes gestionar todos tus servidores desde una sola pantalla:
+
+- Ver **todos los servidores** creados con su versión, tipo y estado (● ONLINE / ○ OFFLINE).
+- **Iniciar / Detener / Reiniciar** cada servidor.
+- **Consola** en vivo con comandos de Minecraft.
+- **Información**: nombre, versión, tipo, estado, puerto, carpeta y (si está ONLINE) las direcciones local, LAN e Internet.
+- **Configuración** del servidor (MOTD, jugadores, gamemode, dificultad, PvP, modo online).
+- **Renombrar** el servidor sin tocar sus archivos internos.
+- **Eliminar** con doble confirmación: se muestra exactamente qué se borrará y hay que escribir `ELIMINAR` para confirmar. Nunca borra otros servidores. Si el servidor está ONLINE, primero pide detenerlo.
+
+Los servidores creados con versiones anteriores de MD Server se **detectan automáticamente** — no tienes que volver a crearlos. Todo vive en `~/mdserver/servers/`.
 
 
 ## 🗑️ Desinstalación | Uninstall
