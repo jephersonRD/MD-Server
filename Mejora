@@ -1,0 +1,163 @@
+Mejorar MD-Server para instalaciones y actualizaciones automáticas
+
+Quiero que analices y mejores completamente el repositorio MD-Server que estoy ejecutando en Termux.
+
+El problema actual es que instalé anteriormente una versión antigua del proyecto y ahora tengo una versión actualizada. Cuando intento ejecutar nuevamente el comando de instalación:
+
+pkg update -y && pkg install -y git python && git clone --depth 1 https://github.com/jephersonRD/MD-Server.git && cd MD-Server && bash install.sh && mdserver
+
+Git falla porque la carpeta "MD-Server" ya existe:
+
+fatal: destination path 'MD-Server' already exists and is not an empty directory.
+
+Quiero que modifiques el código del proyecto, especialmente "install.sh" y cualquier otro archivo necesario, para que el programa pueda ejecutarse de forma segura todas las veces que quiera, sin importar si:
+
+- Es la primera instalación.
+- Ya existe una versión antigua.
+- Ya existe una versión nueva.
+- El usuario interrumpió una instalación anterior.
+- Faltan dependencias.
+- Faltan archivos.
+- El proyecto necesita actualizarse.
+- El usuario ejecuta nuevamente el instalador después de varios días.
+
+Objetivo principal
+
+Quiero que el usuario pueda ejecutar un único comando y que MD-Server se encargue automáticamente de todo.
+
+El instalador debe:
+
+1. Detectar si "MD-Server" ya existe.
+2. Si no existe, descargar/clonar el repositorio automáticamente.
+3. Si ya existe, comprobar si es un repositorio Git válido.
+4. Si es una versión antigua, actualizarla automáticamente.
+5. Si la carpeta existe pero está dañada o no corresponde al repositorio, manejar la situación de forma segura sin destruir datos importantes.
+6. Detectar las dependencias necesarias.
+7. Instalar automáticamente las dependencias que falten.
+8. Detectar la versión de Python disponible en Termux y utilizar una versión compatible.
+9. No asumir rutas específicas que solamente funcionen en mi teléfono.
+10. Utilizar rutas dinámicas como "$HOME".
+11. Poder ejecutarse varias veces sin romper la instalación existente.
+12. Ser compatible con una instalación completamente nueva.
+13. Ser compatible con una instalación existente.
+14. Si hay una actualización disponible, descargarla automáticamente.
+15. Evitar descargar innecesariamente archivos que ya existen y están actualizados.
+16. Verificar que las descargas se hayan realizado correctamente.
+17. Manejar errores de red y permitir volver a ejecutar el instalador sin dejar el sistema en un estado roto.
+
+Comando final deseado
+
+Quiero que el usuario pueda instalar o actualizar MD-Server simplemente ejecutando algo parecido a:
+
+curl -fsSL <URL_DEL_INSTALADOR> | bash
+
+o:
+
+bash install.sh
+
+Y que el script determine automáticamente qué necesita hacer.
+
+Si el proyecto necesita instalarse desde GitHub, debe utilizar el repositorio oficial:
+
+https://github.com/jephersonRD/MD-Server.git
+
+También quiero un comando global
+
+Después de la instalación quiero poder escribir simplemente:
+
+mdserver
+
+desde cualquier directorio de Termux.
+
+Por ejemplo:
+
+cd ~
+mdserver
+
+debe funcionar.
+
+También:
+
+cd ~/storage/downloads
+mdserver
+
+debe funcionar.
+
+No quiero tener que entrar manualmente en:
+
+cd ~/MD-Server
+
+cada vez.
+
+Actualización automática
+
+Haz que "mdserver" pueda comprobar si existe una versión más reciente del proyecto.
+
+Si existe una actualización:
+
+Nueva versión disponible.
+Actualizando MD-Server...
+
+Debe actualizarse de forma segura y después continuar ejecutándose.
+
+Si ya está actualizado:
+
+MD-Server está actualizado.
+
+Compatibilidad con instalaciones antiguas
+
+Este punto es MUY importante.
+
+Como ya existen usuarios que pueden tener una versión antigua instalada, no diseñes el instalador pensando únicamente en instalaciones nuevas.
+
+Debe poder detectar y migrar instalaciones antiguas cuando sea necesario.
+
+Antes de modificar o eliminar archivos importantes, debe comprobar qué contiene la instalación.
+
+Si existen archivos creados por el usuario, configuraciones, mundos, servidores, mods, plugins, etc., no deben eliminarse accidentalmente durante una actualización.
+
+Robustez
+
+Quiero código de calidad de producción:
+
+- "set -e" cuando sea apropiado.
+- Manejo correcto de errores.
+- Validación de comandos.
+- Comprobación de conexión a Internet.
+- Mensajes claros para el usuario.
+- No utilizar rutas absolutas específicas de mi dispositivo.
+- No asumir que Termux está instalado en una ruta concreta.
+- Evitar instalaciones duplicadas.
+- Evitar procesos innecesarios.
+- Permitir ejecutar el instalador múltiples veces.
+- Detectar automáticamente el estado actual de la instalación.
+
+Analiza primero el proyecto
+
+Antes de modificar nada:
+
+1. Analiza toda la estructura del repositorio.
+2. Lee "README.md".
+3. Lee "install.sh".
+4. Lee todos los scripts relacionados con la instalación.
+5. Identifica cómo funciona actualmente "mdserver".
+6. Identifica dónde se instalan las dependencias.
+7. Identifica qué archivos deben conservarse durante una actualización.
+8. Identifica cualquier problema de compatibilidad con Termux y Python moderno.
+9. Después diseña la solución.
+10. Finalmente modifica los archivos necesarios.
+
+No quiero simplemente que me expliques cómo hacerlo. Quiero que modifiques directamente el código del repositorio y lo dejes funcionando.
+
+Al terminar, prueba el flujo completo simulando:
+
+- instalación desde cero;
+- instalación cuando "MD-Server" ya existe;
+- actualización desde una versión antigua;
+- ejecución de "mdserver" desde otro directorio;
+- ejecución repetida del instalador;
+- instalación cuando faltan dependencias.
+
+El resultado debe ser un sistema de instalación y actualización idempotente, es decir, ejecutar el instalador varias veces no debe romper ni duplicar la instalación.
+
+Finalmente, actualiza también el "README.md" con las instrucciones nuevas de instalación, actualización, desinstalación y uso.
