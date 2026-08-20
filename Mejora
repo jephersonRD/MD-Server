@@ -521,3 +521,313 @@ rich.errors.MarkupError
 ni debe morir el hilo reader.
 
 Analiza primero el código actual antes de editarlo y modifica únicamente lo necesario para implementar estas funciones de forma limpia y mantenible.
+
+==================================================
+18. MENÚ DE GESTIÓN DINÁMICO SEGÚN EL TIPO
+==================================================
+
+IMPORTANTE:
+
+El menú que aparece al seleccionar un servidor desde:
+
+[2] 🖥 Mis servidores
+
+NO debe mostrar siempre las mismas opciones.
+
+Debe detectar automáticamente el tipo de servidor:
+
+- Vanilla
+- Fabric
+- Forge
+
+y construir el menú dinámicamente.
+
+==================================================
+VANILLA
+==================================================
+
+Si el servidor es Vanilla, NO mostrar:
+
+🧩 Gestión de mods
+🔌 Gestión de plugins
+
+Por lo tanto, para un servidor Vanilla el menú debe ser:
+
+╭─────────────────────────────────────────────────────────────╮
+│ MENÚ DEL SERVIDOR — Mi servidor                            │
+╰─────────────────────────────────────────────────────────────╯
+
+  [1] ▶ Iniciar servidor
+  [2] ↻ Reiniciar servidor
+  [3] ⌥ Consola del servidor
+  [4] ℹ Información
+  [5] 🌍 Gestión de mundos
+  [6] ⚙ Configuración del servidor
+  [7] ✎ Renombrar servidor
+  [8] 🗑 Eliminar servidor
+  [9] 💾 Copias de seguridad
+  [10] 📊 Monitor del servidor
+  [11] 🌐 Conexión
+  [12] 📁 Administrador de archivos
+  [13] Cambiar idioma
+  [14] ← Atrás
+  [15] Salir
+
+NO debe aparecer ningún espacio vacío donde estaban las opciones de mods/plugins.
+
+Las opciones deben renumerarse automáticamente.
+
+==================================================
+FABRIC
+==================================================
+
+Si el servidor es Fabric, mostrar:
+
+  [1] ▶ Iniciar servidor
+  [2] ↻ Reiniciar servidor
+  [3] ⌥ Consola del servidor
+  [4] ℹ Información
+  [5] 🌍 Gestión de mundos
+  [6] 🧩 Gestión de mods
+  [7] 🔌 Gestión de plugins
+  [8] ⚙ Configuración del servidor
+  [9] ✎ Renombrar servidor
+  [10] 🗑 Eliminar servidor
+  [11] 💾 Copias de seguridad
+  [12] 📊 Monitor del servidor
+  [13] 🌐 Conexión
+  [14] 📁 Administrador de archivos
+  [15] Cambiar idioma
+  [16] ← Atrás
+  [17] Salir
+
+==================================================
+FORGE
+==================================================
+
+Si el servidor es Forge, mostrar también las opciones relacionadas
+con mods/plugins:
+
+  [1] ▶ Iniciar servidor
+  [2] ↻ Reiniciar servidor
+  [3] ⌥ Consola del servidor
+  [4] ℹ Información
+  [5] 🌍 Gestión de mundos
+  [6] 🧩 Gestión de mods
+  [7] 🔌 Gestión de plugins
+  [8] ⚙ Configuración del servidor
+  [9] ✎ Renombrar servidor
+  [10] 🗑 Eliminar servidor
+  [11] 💾 Copias de seguridad
+  [12] 📊 Monitor del servidor
+  [13] 🌐 Conexión
+  [14] 📁 Administrador de archivos
+  [15] Cambiar idioma
+  [16] ← Atrás
+  [17] Salir
+
+==================================================
+IMPORTANTE SOBRE FABRIC Y FORGE
+==================================================
+
+Actualmente Fabric y Forge aparecen en:
+
+CREAR SERVIDOR
+
+como:
+
+[2] Fabric — PRÓXIMAMENTE
+[3] Forge — PRÓXIMAMENTE
+
+Por lo tanto, actualmente no se pueden crear nuevos servidores Fabric
+o Forge desde MD-Server.
+
+Sin embargo, el sistema de gestión debe estar preparado para detectar
+correctamente estos tipos si en el futuro existen servidores Fabric/Forge
+o si son habilitados en una versión posterior.
+
+NO habilitar Fabric/Forge ahora.
+
+==================================================
+REGLA GENERAL
+==================================================
+
+Las opciones deben aparecer según las capacidades reales del servidor.
+
+NO hagas esto:
+
+if server:
+    mostrar_todas_las_opciones()
+
+Haz una lógica basada en el tipo/cargador detectado:
+
+if type == "vanilla":
+    ocultar_mods()
+    ocultar_plugins()
+
+if type == "fabric":
+    mostrar_mods()
+    mostrar_plugins()
+
+if type == "forge":
+    mostrar_mods()
+    mostrar_plugins()
+
+La interfaz debe renumerar automáticamente las opciones después de
+ocultar una función.
+
+==================================================
+NO MOSTRAR OPCIONES INCOMPATIBLES
+==================================================
+
+No quiero que MD-Server muestre opciones que no tengan sentido para
+el servidor seleccionado.
+
+El principio debe ser:
+
+"Si esta función no es compatible con este servidor,
+no mostrarla."
+
+No simplemente mostrarla y luego decir:
+
+⚠ No disponible.
+
+La opción debe estar ausente del menú.
+
+==================================================
+IDIOMA
+==================================================
+
+El menú debe respetar el idioma seleccionado al inicio.
+
+ESPAÑOL:
+
+🧩 Gestión de mods
+🔌 Gestión de plugins
+🌍 Gestión de mundos
+⚙ Configuración del servidor
+
+INGLÉS:
+
+🧩 Mod Management
+🔌 Plugin Management
+🌍 World Management
+⚙ Server Configuration
+
+No mezclar idiomas.
+
+==================================================
+19. DETECCIÓN AUTOMÁTICA DEL TIPO
+==================================================
+
+No dependas únicamente del nombre que el usuario le dio al servidor.
+
+Por ejemplo:
+
+"Mi Vanilla con mods"
+
+NO significa que sea Fabric o Forge.
+
+El tipo debe almacenarse como metadata al crear el servidor y/o
+detectarse mediante los archivos reales del servidor.
+
+Ejemplo:
+
+type = vanilla
+type = fabric
+type = forge
+
+Si existe metadata de servidores creados con versiones anteriores
+de MD-Server, intenta migrarla automáticamente.
+
+==================================================
+20. SERVIDORES ANTIGUOS
+==================================================
+
+MUY IMPORTANTE:
+
+MD-Server ya puede tener servidores creados antes de v1.1.4-beta.
+
+La actualización NO debe romperlos.
+
+Si el tipo del servidor antiguo no está registrado, detectar el tipo
+utilizando los archivos disponibles.
+
+Por ejemplo:
+
+Vanilla:
+server.jar sin loader Fabric/Forge.
+
+Fabric:
+archivos/launcher relacionados con Fabric.
+
+Forge:
+archivos/launcher relacionados con Forge.
+
+Si no es posible determinarlo:
+
+Tipo: Desconocido
+
+y utilizar un menú seguro sin mostrar funciones que podrían no ser
+compatibles.
+
+==================================================
+21. ELIMINAR SERVIDOR
+==================================================
+
+Conservar la función:
+
+🗑 Eliminar servidor
+
+con confirmación doble.
+
+Nunca eliminar un servidor automáticamente.
+
+==================================================
+22. GESTIÓN DE MODS Y PLUGINS
+==================================================
+
+Por ahora NO es necesario implementar completamente nuevas funciones
+de mods/plugins para Fabric/Forge.
+
+La prioridad en v1.1.4-beta es:
+
+1. Mostrar/ocultar correctamente las opciones.
+2. No mostrar opciones incompatibles.
+3. Preparar la arquitectura para futuras versiones.
+
+==================================================
+RESULTADO ESPERADO
+==================================================
+
+Si selecciono un servidor Vanilla:
+
+╭──────────────────────────────────────────────╮
+│ MENÚ DEL SERVIDOR                            │
+├──────────────────────────────────────────────┤
+│ [1] ▶ Iniciar servidor                       │
+│ [2] ↻ Reiniciar servidor                     │
+│ [3] ⌥ Consola del servidor                   │
+│ [4] ℹ Información                            │
+│ [5] 🌍 Gestión de mundos                     │
+│ [6] ⚙ Configuración del servidor             │
+│ [7] ✎ Renombrar servidor                     │
+│ [8] 🗑 Eliminar servidor                      │
+│ [9] 💾 Copias de seguridad                   │
+│ [10] 📊 Monitor del servidor                 │
+│ [11] 🌐 Conexión                             │
+│ [12] 📁 Administrador de archivos            │
+│ [13] Cambiar idioma                          │
+│ [14] ← Atrás                                 │
+│ [15] Salir                                   │
+╰──────────────────────────────────────────────╯
+
+NO aparece:
+
+🧩 Gestión de mods
+🔌 Gestión de plugins
+
+Si posteriormente selecciono un servidor Fabric o Forge,
+esas opciones vuelven a aparecer automáticamente.
+
+La interfaz debe adaptarse al servidor seleccionado.
