@@ -31,7 +31,7 @@ INSTALL_DIR="${MD_SERVER_HOME:-$HOME}/MD-Server"
 
 # ---------- banner ----------
 echo -e "${INFO}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${INFO}║     MD SERVER v1.1.2 — install / update / repair        ║${NC}"
+echo -e "${INFO}║     MD SERVER v1.1.3 — install / update / repair        ║${NC}"
 echo -e "${INFO}╚══════════════════════════════════════════════════════════╝${NC}"
 echo
 

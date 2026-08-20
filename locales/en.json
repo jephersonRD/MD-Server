@@ -284,5 +284,17 @@
   "del.running_q": "You must stop it before deleting it. What do you want to do?",
   "del.stop_and_continue": "Stop server and continue",
   "del.done": "Server deleted successfully.",
-  "del.done_desc": "The server \"{name}\" and its files have been deleted."
+  "del.done_desc": "The server \"{name}\" and its files have been deleted.",
+  "online.title": "SERVER ONLINE",
+  "online.minecraft": "Minecraft",
+  "online.type": "Type",
+  "online.port": "Port",
+  "online.this_device": "THIS DEVICE",
+  "online.tip_device": "Use 127.0.0.1:{port} to connect from this same phone.",
+  "online.lan": "LOCAL NETWORK / WI-FI",
+  "online.tip_lan": "Use the LOCAL NETWORK address to connect from another device on the same Wi-Fi.",
+  "online.no_local_ip": "Could not automatically detect the local network IP.",
+  "online.local_fallback": "You can connect from this device using: 127.0.0.1:{port}",
+  "online.internet": "INTERNET",
+  "online.internet_desc": "Not configured. To allow connections from the Internet you can set up a tunnel like Playit.gg or Tailscale (Connection menu)."
 }

@@ -284,5 +284,17 @@
   "del.running_q": "Debes detenerlo antes de eliminarlo. ¿Qué deseas hacer?",
   "del.stop_and_continue": "Detener servidor y continuar",
   "del.done": "Servidor eliminado correctamente.",
-  "del.done_desc": "El servidor «{name}» y sus archivos han sido eliminados."
+  "del.done_desc": "El servidor «{name}» y sus archivos han sido eliminados.",
+  "online.title": "SERVIDOR ONLINE",
+  "online.minecraft": "Minecraft",
+  "online.type": "Tipo",
+  "online.port": "Puerto",
+  "online.this_device": "ESTE DISPOSITIVO",
+  "online.tip_device": "Usa 127.0.0.1:{port} para conectarte desde este mismo teléfono.",
+  "online.lan": "RED LOCAL / WI-FI",
+  "online.tip_lan": "Usa la dirección de RED LOCAL para conectarte desde otro dispositivo conectado a la misma Wi-Fi.",
+  "online.no_local_ip": "No se pudo detectar automáticamente la IP de la red local.",
+  "online.local_fallback": "Puedes conectarte desde este dispositivo usando: 127.0.0.1:{port}",
+  "online.internet": "INTERNET",
+  "online.internet_desc": "No configurado. Para permitir conexiones desde Internet puedes configurar un túnel como Playit.gg o Tailscale (menú Conexión)."
 }

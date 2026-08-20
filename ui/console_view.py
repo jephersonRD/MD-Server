@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
 
-from core import server_manager
+from core import config, network_manager, server_manager
 from core.i18n import t
 
 console = Console()
@@ -31,6 +31,48 @@ def _timestamp():
     return time.strftime("[%H:%M:%S]")
 
 
+_DONE_RE = re.compile(r"Done\s*\(.*\)\s*!?\s*For help, type \"help\"", re.I)
+
+
+def _show_online_panel(name):
+    meta = config.load_server_meta(name)
+    port = server_manager.read_property(config.server_dir(name), "server-port", "25565")
+    version = meta.get("version", "?")
+    srv_type = meta.get("type", "?").title()
+    lip = network_manager.local_ip()
+
+    lines = [
+        f"  🎮 {t('online.minecraft')}: [bold]{version}[/bold]",
+        f"  ⚙ {t('online.type')}: [cyan]{srv_type}[/cyan]",
+        f"  📡 {t('online.port')}: [bold]{port}[/bold]",
+        "",
+        f"  🏠 [bold]{t('online.this_device')}[/bold]",
+        f"      [bold cyan]127.0.0.1:{port}[/bold cyan]",
+        "",
+        f"  📶 [bold]{t('online.lan')}[/bold]",
+    ]
+    if lip and lip != "0.0.0.0":
+        lines.append(f"      [bold cyan]{lip}:{port}[/bold cyan]")
+        lines.append("")
+        lines.append(f"  💡 {t('online.tip_device').format(port=port)}")
+        lines.append(f"  💡 {t('online.tip_lan')}")
+    else:
+        lines.append(f"  [bold yellow]⚠ {t('online.no_local_ip')}[/bold yellow]")
+        lines.append(f"      {t('online.local_fallback').format(port=port)}")
+    lines.append("")
+    lines.append(f"  🌎 [bold]{t('online.internet')}[/bold]")
+    lines.append(f"  [dim]{t('online.internet_desc')}[/dim]")
+
+    console.print()
+    console.print(Panel(
+        "\n".join(lines),
+        border_style="green",
+        title=f"[bold green]✓ {t('online.title')}[/bold green]",
+        padding=(1, 2),
+    ))
+    console.print()
+
+
 def run_console(name: str):
     proc = server_manager.get_process(name)
     if not proc:
@@ -46,8 +88,10 @@ def run_console(name: str):
     console.print(header)
 
     stop_flag = threading.Event()
+    online_shown = False
 
     def reader():
+        nonlocal online_shown
         for line in proc.stdout:
             if stop_flag.is_set():
                 break
@@ -56,6 +100,9 @@ def run_console(name: str):
             style = _style_line(line)
             tl = f"{_timestamp()} {line.rstrip()}"
             console.print(tl, style=style, highlight=False)
+            if not online_shown and _DONE_RE.search(line):
+                online_shown = True
+                _show_online_panel(name)
 
     th = threading.Thread(target=reader, daemon=True)
     th.start()
