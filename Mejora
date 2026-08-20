@@ -1,336 +1,523 @@
-Quiero corregir y mejorar MD-Server v1.1.2.
+Quiero actualizar MD-Server a la versión:
 
-El servidor Minecraft ahora funciona correctamente y llega a:
+MD-Server v1.1.4-beta
 
-[Server thread/INFO]: Done (14.375s)! For help, type "help" or "?"
+IMPORTANTE:
+Antes de modificar el código, analiza la arquitectura actual y conserva todas las funciones que ya funcionan. No reemplaces sistemas existentes innecesariamente.
 
-El problema es que, cuando el servidor termina de iniciar, MD-Server no muestra al usuario la dirección/IP para conectarse.
+==================================================
+1. SELECCIÓN DE IDIOMA AL INICIAR
+==================================================
 
-Quiero que corrijas esto sin romper ninguna de las funciones que ya funcionan.
+NO ELIMINES la selección de idioma que existe actualmente.
 
-OBJETIVO PRINCIPAL
-
-Cuando MD-Server detecte que el servidor Minecraft terminó de iniciar correctamente, por ejemplo al detectar:
-
-Done (...)! For help, type "help" or "?"
-
-debe mostrar automáticamente una sección muy visible con las direcciones de conexión.
-
-Debe aparecer ANTES de mostrar nuevamente:
-
-[Command] >
-
-EJEMPLO DEL RESULTADO
-
-Después de:
-
-[Server thread/INFO]: Done (14.375s)! For help, type "help" or "?"
-
-quiero algo parecido a:
-
-╭─────────────────────────────────────────────────────────────╮
-│                  ✓ SERVIDOR ONLINE                         │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  🎮 Minecraft: 1.7.10                                      │
-│  ⚙ Tipo: Vanilla                                           │
-│  📡 Puerto: 25565                                          │
-│                                                             │
-│  🏠 ESTE DISPOSITIVO                                       │
-│                                                             │
-│     127.0.0.1:25565                                       │
-│                                                             │
-│  📶 RED LOCAL / WI-FI                                     │
-│                                                             │
-│     192.168.1.25:25565                                    │
-│                                                             │
-│  💡 Usa 127.0.0.1:25565 para conectarte desde este        │
-│     mismo teléfono.                                        │
-│                                                             │
-│  💡 Usa la dirección de RED LOCAL para conectarte desde    │
-│     otro dispositivo conectado a la misma Wi-Fi.           │
-│                                                             │
-╰─────────────────────────────────────────────────────────────╯
-
-╭─────────────────────────────────────────────────────────────╮
-│ CONSOLA DEL SERVIDOR                                       │
-│ Escribe un comando de Minecraft, 'exit' para salir o       │
-│ 'stop' para detener el servidor.                           │
-╰─────────────────────────────────────────────────────────────╯
-
-[Command] >
-
-No copies literalmente "192.168.1.25".
-
-La IP debe detectarse automáticamente.
-
-1. DETECTAR EL PUERTO
-
-No asumas que siempre es "25565".
-
-Lee el puerto real desde:
-
-server.properties
-
-Por ejemplo:
-
-server-port=25565
-
-Si el usuario cambia el puerto a:
-
-server-port=25566
-
-debe mostrar:
-
-127.0.0.1:25566
-
-y la IP de red:
-
-192.168.x.x:25566
-
-2. IP DEL MISMO DISPOSITIVO
-
-Mostrar siempre:
-
-127.0.0.1:<PUERTO>
-
-Esta dirección debe explicarse claramente:
-
-🏠 Este dispositivo
-Usa esta dirección para conectarte desde el mismo teléfono.
-
-3. IP DE LA RED LOCAL
-
-Detecta automáticamente la dirección IPv4 de la interfaz de red activa en Termux/Android.
-
-Por ejemplo:
-
-192.168.1.25
-
-y combinarla con el puerto:
-
-192.168.1.25:25565
-
-Debe funcionar con redes que utilicen:
-
-192.168.x.x
-10.x.x.x
-172.16.x.x - 172.31.x.x
-
-No asumas que siempre será "192.168.1.x".
-
-4. NO USAR LA IP DEL SERVIDOR JAVA
-
-Minecraft muestra:
-
-Starting Minecraft server on *:25565
-
-El "*" significa que está escuchando en todas las interfaces.
-
-NO muestres:
-
-*:25565
-
-como dirección para el jugador.
-
-Convierte esa información en direcciones utilizables:
-
-127.0.0.1:25565
-192.168.x.x:25565
-
-5. DETECCIÓN DEL SERVIDOR ONLINE
-
-La información de IP debe aparecer solamente cuando el servidor realmente esté listo.
-
-Utiliza como indicador:
-
-Done (...)! For help, type "help" or "?"
-
-No muestres:
-
-✓ SERVIDOR ONLINE
-
-simplemente porque el proceso Java haya iniciado.
-
-Debe esperar a que Minecraft indique que terminó de preparar el mundo y está listo para recibir conexiones.
-
-6. EVITAR QUE APAREZCA MÁS DE UNA VEZ
-
-Si Minecraft muestra varias líneas relacionadas con "Done", MD-Server no debe imprimir el panel repetidamente.
-
-El panel:
-
-✓ SERVIDOR ONLINE
-
-debe mostrarse una sola vez por cada inicio del servidor.
-
-7. SI NO SE PUEDE DETECTAR LA IP LOCAL
-
-No debe producirse un error.
+Debe ser SIEMPRE el primer paso al abrir MD-Server, antes del menú principal y antes de crear servidores.
 
 Mostrar:
 
-⚠ No se pudo detectar automáticamente la IP de la red local.
+╭──────────────────────────────────────────────╮
+│              MD SERVER                      │
+│          Selecciona tu idioma               │
+├──────────────────────────────────────────────┤
+│                                              │
+│  [1] 🇪🇸 Español                             │
+│  [2] 🇺🇸 English                             │
+│                                              │
+╰──────────────────────────────────────────────╯
 
-Puedes conectarte desde este dispositivo usando:
+El idioma seleccionado debe guardarse en la sesión y utilizarse para TODA la interfaz.
 
-127.0.0.1:25565
+No mezclar español e inglés después de seleccionar el idioma.
 
-La consola debe seguir funcionando normalmente.
+Si selecciono Español:
+- todos los menús estarán en español.
 
-8. IP PÚBLICA / AMIGOS DESDE INTERNET
+Si selecciono English:
+- todos los menús estarán en inglés.
 
-Por ahora NO inventes ni muestres una IP pública como si fuera directamente utilizable.
+==================================================
+2. FABRIC Y FORGE — PRÓXIMAMENTE
+==================================================
 
-Añade una sección opcional:
+En "Crear servidor" deben seguir apareciendo Vanilla, Fabric y Forge.
 
-🌎 INTERNET
+Pero actualmente SOLO Vanilla estará disponible.
 
-No configurado.
+Mostrar:
 
-Para permitir conexiones desde Internet puedes configurar
-un túnel como Playit o Tailscale.
+╭──────────────────────────────────────────────╮
+│ TIPO DE SERVIDOR                             │
+├──────────────────────────────────────────────┤
+│                                              │
+│  [1] Vanilla                                │
+│      Minecraft oficial                      │
+│                                              │
+│  [2] Fabric  — PRÓXIMAMENTE                 │
+│  [3] Forge   — PRÓXIMAMENTE                 │
+│                                              │
+╰──────────────────────────────────────────────╯
 
-Si MD-Server ya tiene integración con algún sistema de túnel, utiliza la dirección real proporcionada por ese sistema.
+IMPORTANTE:
 
-Nunca inventes una dirección.
+[2] Fabric y [3] Forge deben aparecer visualmente como opciones, pero NO deben poder seleccionarse.
 
-9. INFORMACIÓN DEL SERVIDOR
+No deben aceptar:
+2
+3
 
-Utiliza los datos reales del servidor:
+como entradas válidas.
 
-Minecraft: 1.7.10
-Tipo: Vanilla / Fabric / Forge
-Puerto: 25565
-Estado: ONLINE
+Las opciones deshabilitadas deben verse opacas/atenuadas para que el usuario entienda que existen pero todavía no están disponibles.
 
-No hardcodees estos valores.
+Por ejemplo:
 
-10. COMPATIBILIDAD
+[1] Vanilla
+[2] Fabric  — PRÓXIMAMENTE
+[3] Forge   — PRÓXIMAMENTE
 
-Esta función debe funcionar para:
+donde Fabric y Forge tengan un estilo visual apagado.
 
-- Vanilla
-- Fabric
-- Forge
-- Minecraft 1.7.10
-- Minecraft 1.12.2
-- Minecraft 1.16.5
-- Minecraft 1.20.1
-- versiones modernas
+Si el usuario intenta introducir 2 o 3:
 
-No cambies innecesariamente la lógica de descarga o instalación de servidores.
+mostrar:
 
-11. IMPORTANTE: CONSERVAR FUNCIONES ACTUALES
+⚠ Esta opción todavía no está disponible.
+Fabric estará disponible próximamente.
 
-La versión v1.1.2 ya tiene:
+o:
 
-- Instalador automático.
-- Actualización automática.
-- Comando global "mdserver".
-- Menú principal.
-- Crear servidor.
-- Mis servidores.
-- Selección de Vanilla/Fabric/Forge.
-- Selección de versiones.
-- Soporte para versiones personalizadas.
-- Consola del servidor.
+⚠ Esta opción todavía no está disponible.
+Forge estará disponible próximamente.
 
-No rompas ninguna de estas funciones.
+Después volver a pedir una opción válida.
 
-La modificación debe integrarse con la arquitectura actual.
+NO eliminar Fabric ni Forge del menú.
 
-12. CONSOLA
+NO implementar Fabric o Forge todavía.
 
-Actualmente la consola funciona y permite:
+==================================================
+3. IDIOMA DE "PRÓXIMAMENTE"
+==================================================
 
-help
-op jugador
-stop
+El texto debe respetar el idioma seleccionado.
 
-No rompas el sistema de consola mientras agregas la detección de IP.
+ESPAÑOL:
 
-La información de conexión debe aparecer antes de:
+[2] Fabric — PRÓXIMAMENTE
+[3] Forge  — PRÓXIMAMENTE
+
+INGLÉS:
+
+[2] Fabric — COMING SOON
+[3] Forge  — COMING SOON
+
+También todos los mensajes de error deben traducirse.
+
+==================================================
+4. BUG CRÍTICO DE LA CONSOLA — RICH MARKUP
+==================================================
+
+Actualmente existe este error cuando entra un jugador:
+
+Exception in thread Thread-1 (reader):
+
+rich.errors.MarkupError:
+closing tag '[/127.0.0.1:45902]' at position 55
+doesn't match any open tag
+
+El error ocurre en:
+
+ui/console_view.py
+
+con:
+
+console.print(tl, style=style, highlight=False)
+
+Esto NO debe volver a ocurrir.
+
+El problema es que Rich está interpretando contenido proveniente del servidor Minecraft como Rich Markup.
+
+Por ejemplo, una dirección/IP o contenido generado por Minecraft puede contener caracteres que Rich interpreta como:
+
+[algo]
+
+y termina intentando procesarlo como una etiqueta.
+
+SOLUCIÓN:
+
+Toda salida proveniente directamente del proceso de Minecraft debe imprimirse de forma SEGURA, sin permitir que Rich interprete el contenido recibido como markup.
+
+Utiliza el mecanismo apropiado de Rich para imprimir texto literal/escapado.
+
+Por ejemplo, puedes utilizar:
+
+markup=False
+
+cuando corresponda, o escapar correctamente el texto antes de imprimirlo.
+
+NO hagas simplemente una búsqueda de este error específico.
+
+La solución debe proteger TODA la salida de Minecraft contra Rich Markup.
+
+Por ejemplo, estas cadenas no deben romper la consola:
+
+[127.0.0.1:45902]
+[/127.0.0.1:45902]
+[player]
+[/player]
+[Server]
+[/Server]
+
+Ni cualquier otro texto proveniente del servidor.
+
+==================================================
+5. NO DEBE MORIR EL THREAD READER
+==================================================
+
+Actualmente cuando ocurre el MarkupError aparece:
+
+Exception in thread Thread-1 (reader)
+
+y el lector de consola deja de funcionar.
+
+Esto no debe ocurrir.
+
+Aunque Minecraft envíe una línea inesperada, el reader debe continuar funcionando.
+
+Añade manejo de excepciones apropiado alrededor del procesamiento/impresión de cada línea.
+
+Una línea problemática NO debe matar el hilo completo.
+
+IMPORTANTE:
+
+No ocultes errores reales silenciosamente.
+
+Si ocurre un error inesperado, debe manejarse de forma segura y, si es necesario, mostrarse de manera legible.
+
+==================================================
+6. DETECTAR CUANDO ENTRA UN JUGADOR
+==================================================
+
+Cuando Minecraft indique que un jugador entró al servidor, MD-Server debe detectar ese evento.
+
+Por ejemplo, Minecraft puede mostrar algo similar a:
+
+<nombre>[/127.0.0.1:45902] logged in
+
+o diferentes formatos dependiendo de la versión.
+
+NO dependas únicamente de un texto exacto.
+
+Implementa un parser razonablemente robusto para detectar eventos de:
+
+JOIN / LOGIN
+
+y:
+
+LEAVE / LOGOUT / DISCONNECT
+
+según la salida del servidor.
+
+==================================================
+7. MENSAJE CUANDO ENTRA UN JUGADOR
+==================================================
+
+Cuando un jugador entre, mostrar un panel similar al panel que aparece cuando el servidor se pone ONLINE.
+
+Pero en lugar de verde, debe utilizar un estilo AZUL.
+
+Ejemplo:
+
+╭──────────────────── 🔵 JUGADOR CONECTADO ───────────────────╮
+│                                                             │
+│    👤 Usuario: Steve                                        │
+│    📡 Dirección: 127.0.0.1:45902                            │
+│                                                             │
+│    ✓ Steve entró al servidor.                               │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
+
+El panel debe ser azul.
+
+No imprimir únicamente:
+
+Steve joined the game
+
+Quiero un mensaje visualmente destacado.
+
+==================================================
+8. MENSAJE CUANDO UN JUGADOR SALE
+==================================================
+
+Cuando un jugador abandone el servidor:
+
+╭──────────────────── 🔵 JUGADOR DESCONECTADO ────────────────╮
+│                                                             │
+│    👤 Usuario: Steve                                        │
+│                                                             │
+│    ✓ Steve salió del servidor.                              │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
+
+También debe ser azul.
+
+Debe funcionar tanto si el jugador entra como si sale.
+
+==================================================
+9. IP DEL JUGADOR
+==================================================
+
+Si Minecraft proporciona la IP/puerto del jugador:
+
+127.0.0.1:45902
+
+puede mostrarse en el mensaje.
+
+Pero NO debe provocar nunca un Rich MarkupError.
+
+La IP debe tratarse como texto literal.
+
+Si no se puede detectar la IP:
+
+👤 Usuario: Steve
+
+sin mostrar una IP falsa.
+
+NO inventar información.
+
+==================================================
+10. NO DUPLICAR MENSAJES
+==================================================
+
+Un JOIN debe generar un solo panel.
+
+Un LEAVE debe generar un solo panel.
+
+No mostrar el mismo evento dos o tres veces aunque Minecraft produzca varias líneas relacionadas.
+
+==================================================
+11. PANEL DEL SERVIDOR ONLINE
+==================================================
+
+Conservar el panel que ya funciona:
+
+╭───────────────────── ✓ SERVIDOR ONLINE ─────────────────────╮
+│                                                             │
+│    🎮 Minecraft: 1.7.10                                     │
+│    ⚙ Tipo: Vanilla                                          │
+│    📡 Puerto: 25565                                         │
+│                                                             │
+│    🏠 ESTE DISPOSITIVO                                      │
+│        127.0.0.1:25565                                      │
+│                                                             │
+│    📶 RED LOCAL / WI-FI                                     │
+│        192.168.100.21:25565                                 │
+│                                                             │
+│    🌎 INTERNET                                               │
+│    No configurado...                                        │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
+
+No eliminar esta función.
+
+==================================================
+12. CONSERVAR IP AUTOMÁTICA
+==================================================
+
+Debe seguir detectando:
+
+127.0.0.1:<puerto>
+
+y:
+
+<IP_LOCAL>:<puerto>
+
+El puerto debe obtenerse de server.properties.
+
+NO hardcodear:
+
+25565
+
+ni:
+
+192.168.100.21
+
+==================================================
+13. CONSOLA
+==================================================
+
+Después de mostrar los mensajes visuales debe continuar funcionando:
 
 [Command] >
 
-pero después de que Minecraft indique que está listo.
+El usuario debe poder ejecutar:
 
-13. PRUEBA OBLIGATORIA
+help
+list
+op jugador
+deop jugador
+stop
+etc.
 
-Prueba específicamente:
+No romper la entrada de comandos.
 
-Vanilla
+==================================================
+14. COMPATIBILIDAD CON VERSIONES ANTIGUAS
+==================================================
+
+La detección de JOIN/LEAVE debe funcionar de la forma más compatible posible con las diferentes versiones de Minecraft que MD-Server soporte.
+
+Especialmente probar:
+
 Minecraft 1.7.10
-Puerto 25565
 
-Cuando aparezca:
+No asumir que las versiones modernas generan exactamente el mismo texto que 1.7.10.
+
+==================================================
+15. PRUEBA OBLIGATORIA
+==================================================
+
+Realiza una prueba utilizando:
+
+Minecraft:
+1.7.10
+
+Tipo:
+Vanilla
+
+Puerto:
+25565
+
+Después de:
 
 Done (...)! For help, type "help" or "?"
 
-debe aparecer automáticamente:
+debe aparecer el panel:
 
 ✓ SERVIDOR ONLINE
 
-127.0.0.1:25565
+Después conectar un jugador.
 
-<IP LOCAL DETECTADA>:25565
+NO debe aparecer:
 
-Después debe aparecer:
+Exception in thread "Thread-1" (reader)
 
-[Command] >
+NO debe aparecer:
 
-y el usuario debe poder seguir utilizando la consola normalmente.
+rich.errors.MarkupError
 
-14. NO QUIERO UNA SOLUCIÓN HARDCODEADA
+NO debe romperse:
 
-NO hagas simplemente:
+ui/console_view.py
 
-ip = "192.168.1.25"
-port = 25565
+En su lugar debe aparecer algo como:
 
-La IP y el puerto deben detectarse dinámicamente.
+╭──────────────────── 🔵 JUGADOR CONECTADO ───────────────────╮
+│                                                             │
+│    👤 Usuario: jephersonRD                                  │
+│    📡 Dirección: 127.0.0.1:45902                            │
+│                                                             │
+│    ✓ jephersonRD entró al servidor.                         │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
 
-La solución debe funcionar en otros teléfonos Android, otras redes Wi-Fi y otros puertos.
+Después el servidor debe continuar funcionando normalmente.
 
-15. ACTUALIZAR VERSIÓN
+Cuando el jugador salga:
 
-Mantén el proyecto como:
+╭────────────────── 🔵 JUGADOR DESCONECTADO ──────────────────╮
+│                                                             │
+│    👤 Usuario: jephersonRD                                  │
+│                                                             │
+│    ✓ jephersonRD salió del servidor.                        │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
 
-MD-Server v1.1.2
+==================================================
+16. VERSIÓN
+==================================================
 
-No cambies la versión a otra distinta.
+Actualizar la versión del proyecto a:
 
-Actualiza el README si es necesario para explicar que MD-Server muestra automáticamente las direcciones de conexión cuando el servidor está ONLINE.
+MD-Server v1.1.4-beta
 
-RESULTADO FINAL
+Actualizar cualquier lugar donde actualmente aparezca una versión anterior:
 
-Quiero que al crear un servidor el usuario no tenga que preguntarse:
+- CLI
+- Banner
+- README
+- documentación
+- metadata del proyecto
+- mensajes del instalador, si corresponde
 
-«"¿Cuál es la IP de mi servidor?"»
+==================================================
+17. NO ROMPER FUNCIONES EXISTENTES
+==================================================
 
-MD-Server debe detectarla y mostrársela automáticamente en un panel claro justo cuando Minecraft termine de iniciar.
+Conservar:
 
-La experiencia final debe ser:
+✓ Selección de idioma al inicio
+✓ Español/Inglés
+✓ Crear servidor
+✓ Vanilla
+✓ Fabric visible pero deshabilitado
+✓ Forge visible pero deshabilitado
+✓ Versiones de Minecraft
+✓ Versiones antiguas
+✓ Versiones personalizadas
+✓ Mis servidores
+✓ Iniciar servidor
+✓ Detener servidor
+✓ Consola
+✓ IP 127.0.0.1
+✓ IP de red local
+✓ Detección automática del puerto
+✓ Panel SERVIDOR ONLINE
+✓ Comando global mdserver
+✓ Instalador/actualizador automático
 
-Creando servidor...
+==================================================
+OBJETIVO FINAL
+==================================================
+
+MD-Server v1.1.4-beta debe sentirse como un administrador de servidores Minecraft profesional para Termux.
+
+El flujo debe ser:
+
+SELECCIONAR IDIOMA
         ↓
-Descargando archivos...
+MENÚ PRINCIPAL
         ↓
-Iniciando Minecraft...
+CREAR SERVIDOR
         ↓
-Preparando mundo...
+Vanilla
+Fabric — PRÓXIMAMENTE
+Forge — PRÓXIMAMENTE
         ↓
-✓ Servidor ONLINE
+SELECCIONAR VERSIÓN
         ↓
-📡 Dirección:
-127.0.0.1:25565
+CREAR SERVIDOR
+        ↓
+INICIAR MINECRAFT
+        ↓
+✓ SERVIDOR ONLINE
+        ↓
+Mostrar IP automáticamente
+        ↓
+CONSOLA
+        ↓
+Jugador entra
+        ↓
+🔵 JUGADOR CONECTADO
+        ↓
+Jugador sale
+        ↓
+🔵 JUGADOR DESCONECTADO
 
-📶 Red local:
-192.168.x.x:25565
-        ↓
-CONSOLA DEL SERVIDOR
-[Command] >
+Y EN NINGÚN MOMENTO debe aparecer el:
 
-Analiza primero el código existente, identifica dónde se procesa la salida de Minecraft y dónde se inicia la consola, y realiza la integración en el lugar correcto. No crees un sistema paralelo que duplique la lógica existente.
-luego sube el cambio a la v1.1.3
+rich.errors.MarkupError
+
+ni debe morir el hilo reader.
+
+Analiza primero el código actual antes de editarlo y modifica únicamente lo necesario para implementar estas funciones de forma limpia y mantenible.
