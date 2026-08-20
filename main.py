@@ -2,7 +2,12 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+__version__ = "1.1.0"
+__repo__ = "jephersonRD/MD-Server"
+__branch__ = "main"
+
+APP_DIR = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, APP_DIR)
 
 from rich.console import Console
 from rich.panel import Panel
@@ -13,6 +18,49 @@ from ui.dashboard import dashboard
 from ui.progress import human
 
 console = Console()
+
+
+def auto_update(argv=None, verbose=False):
+    """Check for updates on GitHub and apply them before starting."""
+    argv = argv if argv is not None else sys.argv[1:]
+    if "--no-update" in argv or os.environ.get("MD_SERVER_NO_UPDATE") == "1":
+        return
+    if os.environ.get("MD_SERVER_UPDATED") == "1":
+        return
+    import subprocess
+    if not os.path.isdir(os.path.join(APP_DIR, ".git")):
+        return  # not a git install (e.g. tarball) — nothing to update
+    try:
+        subprocess.run(
+            ["git", "-C", APP_DIR, "fetch", "--depth", "1", "origin", __branch__],
+            capture_output=True, text=True, timeout=30,
+        )
+    except Exception:
+        return  # offline or git error — run anyway
+    try:
+        head = subprocess.run(["git", "-C", APP_DIR, "rev-parse", "HEAD"],
+                              capture_output=True, text=True, timeout=10).stdout.strip()
+        remote = subprocess.run(["git", "-C", APP_DIR, "rev-parse", "origin/" + __branch__],
+                                capture_output=True, text=True, timeout=10).stdout.strip()
+    except Exception:
+        return
+    if not remote or remote == head:
+        if verbose:
+            print(f"\033[0;32m✓ MD Server está actualizado | up to date (v{__version__})\033[0m")
+        return  # already up to date
+    try:
+        subprocess.run(["git", "-C", APP_DIR, "reset", "--hard", "origin/" + __branch__],
+                       capture_output=True, text=True, timeout=60)
+        subprocess.run(["git", "-C", APP_DIR, "clean", "-fd"],
+                       capture_output=True, text=True, timeout=60)
+    except Exception:
+        pass
+    print("\n\033[1;36m🔄 MD Server updated to the latest version.\033[0m\n")
+    os.environ["MD_SERVER_UPDATED"] = "1"
+    try:
+        os.execv(sys.executable, [sys.executable, os.path.realpath(__file__)] + argv)
+    except Exception:
+        pass
 
 
 def choose_language():
@@ -116,7 +164,6 @@ def _server_running(name):
 
 
 def _latest_server(servers):
-    import os
     return max(servers, key=lambda s: os.path.getmtime(os.path.join(config.SERVERS_DIR, s, "mdserver.json")) or 0)
 
 
@@ -133,6 +180,16 @@ def _resume(servers):
 
 
 def main():
+    argv = sys.argv[1:]
+    if "--version" in argv or "-v" in argv:
+        print(f"MD Server v{__version__}")
+        sys.exit(0)
+    if "--check-update" in argv:
+        auto_update(argv, verbose=True)
+        sys.exit(0)
+
+    auto_update(argv)
+
     config.ensure_dirs()
     cfg = config.get_config()
 
@@ -159,7 +216,6 @@ def main():
 
         # First-use question per requirement: returning users may only want to boot an old server
         if has_servers and first_run_question():
-            # they want a brand-new server
             from wizard import run_wizard
             name, _ = run_wizard()
             if name in config.list_servers():

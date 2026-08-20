@@ -145,9 +145,17 @@
   "net.install_playit": "Instalar Playit.gg (recomendado)",
   "net.install_tailscale": "Instalar Tailscale",
   "net.playit_how": "Cómo usar Playit.gg:",
-  "net.playit_steps": ["Abre otra sesión de Termux y ejecuta: playit", "Te pedirá asignar un túnel: usa el mismo puerto que el servidor", "Comparte la dirección pública que te entregue con tus amigos"],
+  "net.playit_steps": [
+    "Abre otra sesión de Termux y ejecuta: playit",
+    "Te pedirá asignar un túnel: usa el mismo puerto que el servidor",
+    "Comparte la dirección pública que te entregue con tus amigos"
+  ],
   "net.tailscale_how": "Cómo usar Tailscale:",
-  "net.tailscale_steps": ["Ejecuta: tailscale up", "Inicia sesión con tu cuenta", "Comparte tu IP de Tailscale:puerto con tus amigos"],
+  "net.tailscale_steps": [
+    "Ejecuta: tailscale up",
+    "Inicia sesión con tu cuenta",
+    "Comparte tu IP de Tailscale:puerto con tus amigos"
+  ],
   "world.title": "GESTIÓN DE MUNDOS",
   "world.create": "Crear mundo nuevo",
   "world.import": "Importar mundo",
@@ -217,5 +225,10 @@
   "change_lang": "Cambiar idioma",
   "lang.changed": "Idioma cambiado",
   "exit.bye": "Gracias por usar MD Server. ¡Hasta pronto!",
-  "key.saved": "Guardado. Puedes reiniciar MD Server para aplicar los cambios."
+  "key.saved": "Guardado. Puedes reiniciar MD Server para aplicar los cambios.",
+  "version.current": "MD Server v{version}",
+  "update.available": "Nueva versión disponible. Actualizando MD Server...",
+  "update.up_to_date": "MD Server está actualizado (v{version})",
+  "update.updated": "MD Server actualizado correctamente",
+  "update.offline": "Sin conexión. Se continúa con la versión local."
 }

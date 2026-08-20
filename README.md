@@ -1,6 +1,6 @@
 <div align="center">
 
-![MD Server](https://img.shields.io/badge/MD%20Server-v1.0.0-cyan?style=for-the-badge)
+![MD Server](https://img.shields.io/badge/MD%20Server-v1.1.0-cyan?style=for-the-badge)
 [![Termux](https://img.shields.io/badge/Platform-Termux%20%28Android%29-3b9e46?style=for-the-badge)](https://termux.dev)
 [![Java](https://img.shields.io/badge/Java-21%20%2F%2017-e76f00?style=for-the-badge)](https://adoptium.net)
 [![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](LICENSE)
@@ -25,19 +25,27 @@
 
 ## 📥 Zona de descarga | Download zone
 
-Copia este código en Termux y pulsa Enter (**este es el código que pegarás en Termux** / **this is the code you paste in Termux**):
+Copia **una** de estas líneas en Termux y pulsa Enter (**este es el código que pegarás en Termux** / **this is the code you paste in Termux**):
+
+**Método 1 — un solo comando (recomendado / recommended):**
 
 ```bash
-pkg update -y && pkg install -y git python && cd ~ && if [ -d MD-Server/.git ]; then cd MD-Server && git pull --ff-only; else git clone --depth 1 https://github.com/jephersonRD/MD-Server.git && cd MD-Server; fi && bash install.sh && mdserver
+curl -fsSL https://raw.githubusercontent.com/jephersonRD/MD-Server/main/install.sh | bash
 ```
 
-> ⚠️ Si ya habías instalado antes, **no es necesario borrar nada**: el comando detecta la carpeta existente y la actualiza automáticamente.
+**Método 2 — desde GitHub:**
+
+```bash
+pkg update -y && pkg install -y git python && cd ~ && if [ -d MD-Server/.git ]; then cd MD-Server && git pull --ff-only; else git clone --depth 1 https://github.com/jephersonRD/MD-Server.git && cd MD-Server; fi && bash install.sh
+```
+
+> ⚠️ El instalador es **reutilizable y seguro**: puedes ejecutarlo todas las veces que quieras. Detecta si es la primera instalación, si ya tienes una versión antigua o nueva, si faltan dependencias o si una instalación quedó a medias, y lo resuelve automáticamente **sin borrar nunca tus servidores, mundos, mods ni ajustes** (esos viven en `~/mdserver/`, no en la carpeta del código).
 
 > ℹ️ La primera vez te preguntará el idioma y guía todo el proceso.
 > La primera vez que uses el código, te preguntará si **es tu primera vez** o si **ya tienes un servidor** creado (para encenderlo directamente sin crear uno nuevo).
 > ℹ️ On first use it asks for your language and guides you through the entire process.
 >
-> 🆕 **v1.0.1**: menús 100% numéricos (elige con 1, 2, 3...), RAM por número y soporte de **versiones antiguas** (1.7.10, 1.8.9, etc.) con lista paginada o escritura manual.
+> 🆕 **v1.1.0**: instalador y actualizador automático. **v1.0.1**: menús 100% numéricos (elige con 1, 2, 3...), RAM por número y soporte de **versiones antiguas** (1.7.10, 1.8.9, etc.) con lista paginada o escritura manual.
 
 ---
 
@@ -72,6 +80,16 @@ pkg update -y && pkg install -y git python && cd ~ && if [ -d MD-Server/.git ]; 
 
 ## 🚀 Instalación | Installation
 
+El instalador es **idempotente**: puedes ejecutarlo las veces que quieras y siempre deja el sistema en buen estado.
+
+**Opción A — un solo comando (recomendado):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jephersonRD/MD-Server/main/install.sh | bash
+```
+
+**Opción B — clonar y ejecutar:**
+
 ```bash
 pkg update -y
 pkg install -y git python
@@ -92,7 +110,54 @@ o directamente:
 ./main.py
 ```
 
-`install.sh` crea el comando global `mdserver` en tu `$PREFIX/bin`.
+`install.sh` crea el comando global `mdserver` (en `$PREFIX/bin` en Termux, o `~/.local/bin` en otros sistemas).
+
+### 🤖 Instalación automática
+- Si la carpeta `MD-Server` **no existe**, se clona desde GitHub.
+- Si ya existe un repo Git, se **actualiza** automáticamente.
+- Si la carpeta está dañada o no es MD Server, se **respalda** (`MD-Server.old-FECHA`) y se instala de nuevo — nunca borra datos sin avisar.
+- Si **faltan dependencias** (git, Python, rich, requests), las instala.
+- Si una **instalación quedó a medias**, se repara en la siguiente ejecución.
+- Las descargas se comprueban y el proceso se puede volver a ejecutar aunque hubo un error de red.
+
+---
+
+## 🔄 Actualización | Update
+
+**Automática al ejecutar `mdserver`:** al arrancar, MD Server consulta GitHub. Si hay una versión nueva:
+
+```
+🔄 MD Server updated to the latest version.
+```
+
+y continúa ejecutándose. Si estás al día, no muestra nada (arranca directo).
+
+**Manual:** vuelve a ejecutar el instalador (Opción A o B). No necesitas borrar nada.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/jephersonRD/MD-Server/main/install.sh | bash
+```
+
+Opciones de actualización de `mdserver`:
+- `mdserver --no-update` — omite la comprobación esta vez.
+- `mdserver --check-update` — solo comprueba si hay actualizaciones (no abre la app).
+
+---
+
+## 🗑️ Desinstalación | Uninstall
+
+El código y el comando viven en rutas separadas de tus datos.
+
+```bash
+# Quitar el comando global y el código (Termux)
+rm -f "$PREFIX/bin/mdserver"
+rm -rf ~/MD-Server
+
+# Quitar TODOS tus datos de servidores (mundos, mods, backups, ajustes)
+rm -rf ~/mdserver
+```
+
+> ⚠️ El segundo `rm -rf ~/mdserver` elimina **todo** lo que hayas creado (servidores, mundos, copias). Hazlo solo si quieres borrar definitivamente todo.
 
 ---
 

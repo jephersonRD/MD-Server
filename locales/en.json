@@ -145,9 +145,17 @@
   "net.install_playit": "Install Playit.gg (recommended)",
   "net.install_tailscale": "Install Tailscale",
   "net.playit_how": "How to use Playit.gg:",
-  "net.playit_steps": ["Open another Termux session and run: playit", "It will ask to assign a tunnel: use the same port as the server", "Share the public address it gives you with your friends"],
+  "net.playit_steps": [
+    "Open another Termux session and run: playit",
+    "It will ask to assign a tunnel: use the same port as the server",
+    "Share the public address it gives you with your friends"
+  ],
   "net.tailscale_how": "How to use Tailscale:",
-  "net.tailscale_steps": ["Run: tailscale up", "Login with your account", "Share your Tailscale IP:port with your friends"],
+  "net.tailscale_steps": [
+    "Run: tailscale up",
+    "Login with your account",
+    "Share your Tailscale IP:port with your friends"
+  ],
   "world.title": "WORLD MANAGEMENT",
   "world.create": "Create new world",
   "world.import": "Import world",
@@ -217,5 +225,10 @@
   "change_lang": "Change language",
   "lang.changed": "Language changed",
   "exit.bye": "Thanks for using MD Server. See you soon!",
-  "key.saved": "Saved. You can restart MD Server to apply changes."
+  "key.saved": "Saved. You can restart MD Server to apply changes.",
+  "version.current": "MD Server v{version}",
+  "update.available": "New version available. Updating MD Server...",
+  "update.up_to_date": "MD Server is up to date (v{version})",
+  "update.updated": "MD Server updated successfully",
+  "update.offline": "No internet connection. Continuing with the local version."
 }
