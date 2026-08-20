@@ -16,13 +16,15 @@ _WARN = "bold yellow"
 _ERR = "bold red"
 _INFO_OK = "bold green"
 
+_PLAYER_RE = re.compile(r"[A-Za-z0-9_]{1,16}")
+
 
 def _style_line(line: str):
     if re.search(r"\[(?:WARN|WARNING)\]", line, re.I):
         return _WARN
     if re.search(r"(ERROR|Exception|Failed|Caused by|SEVERE)", line, re.I):
         return _ERR
-    if re.search(r"(Done \(|joined the game|\(!\)? )", line, re.I):
+    if re.search(r"(Done \(|joined the game|\(!?\) )", line, re.I):
         return _INFO_OK
     return _INFO
 
@@ -73,6 +75,58 @@ def _show_online_panel(name):
     console.print()
 
 
+_JOIN_LOGGED_RE = re.compile(r"<([A-Za-z0-9_]{1,16})>(?:\[[^\]]*\])?\s+(?:logged in|joined the game)", re.I)
+_JOIN_UUID_RE = re.compile(r"UUID of player ([A-Za-z0-9_]{1,16}) is ", re.I)
+_JOIN_BARE_RE = re.compile(r"([A-Za-z0-9_]{1,16})\s+(?:joined the game)", re.I)
+_LEAVE_RE = re.compile(r"([A-Za-z0-9_]{1,16})\s+(?:left the game|left the server|disconnected|lost connection:|has disconnected)", re.I)
+_ADDR_RE = re.compile(r"\[/?(?P<addr>(?:\d{1,3}\.){3}\d{1,3}:\d{1,5})\]")
+
+
+def _extract_addr(line: str):
+    m = _ADDR_RE.search(line)
+    return m.group("addr") if m else None
+
+
+def _player_event(line: str):
+    """Detect join/leave events from Minecraft output.
+
+    Returns (kind, name, addr) or None. Compatible with both modern and
+    legacy formats (e.g. Minecraft 1.7.10: '<Steve>[/127.0.0.1:45902] logged in').
+    """
+    m = _JOIN_LOGGED_RE.search(line)
+    if m:
+        return ("join", m.group(1), _extract_addr(line))
+    m = _JOIN_UUID_RE.search(line)
+    if m:
+        return ("join", m.group(1), None)
+    m = _JOIN_BARE_RE.search(line.strip())
+    if m:
+        return ("join", m.group(1), None)
+    m = _LEAVE_RE.search(line)
+    if m:
+        return ("leave", m.group(1), None)
+    return None
+
+
+def _show_player_panel(name, addr, kind):
+    title = t("player.leave_title") if kind == "leave" else t("player.join_title")
+    lines = [f"  👤 {t('player.user')}: [bold]{name}[/bold]"]
+    if addr:
+        lines.append(f"  📡 {t('player.address')}: [bold cyan]{addr}[/bold cyan]")
+    msg = (t("player.left").format(name=name) if kind == "leave"
+           else t("player.joined").format(name=name))
+    lines.append("")
+    lines.append(f"  ✓ [bold]{msg}[/bold]")
+    console.print()
+    console.print(Panel(
+        "\n".join(lines),
+        border_style="blue",
+        title=f"[bold blue]🔵 {title}[/bold blue]",
+        padding=(1, 2),
+    ))
+    console.print()
+
+
 def run_console(name: str):
     proc = server_manager.get_process(name)
     if not proc:
@@ -89,6 +143,7 @@ def run_console(name: str):
 
     stop_flag = threading.Event()
     online_shown = False
+    online_players = set()
 
     def reader():
         nonlocal online_shown
@@ -97,12 +152,18 @@ def run_console(name: str):
                 break
             if not line.strip():
                 continue
-            style = _style_line(line)
-            tl = f"{_timestamp()} {line.rstrip()}"
-            console.print(tl, style=style, highlight=False)
-            if not online_shown and _DONE_RE.search(line):
-                online_shown = True
-                _show_online_panel(name)
+            try:
+                style = _style_line(line)
+                # Server output is untrusted text: never let Rich interpret it as markup.
+                console.print(f"{_timestamp()} {line.rstrip()}", style=style, highlight=False, markup=False)
+                if not online_shown and _DONE_RE.search(line):
+                    online_shown = True
+                    _show_online_panel(name)
+                ev = _player_event(line)
+                if ev:
+                    _handle_player_event(ev, online_players)
+            except Exception as e:
+                console.print(f"[bold yellow]⚠ {t('console.line_error')}: {e}[/bold yellow]")
 
     th = threading.Thread(target=reader, daemon=True)
     th.start()
@@ -131,3 +192,17 @@ def run_console(name: str):
     stop_flag.set()
     if th.is_alive():
         time.sleep(0.3)
+
+
+def _handle_player_event(ev, online_players):
+    kind, name, addr = ev
+    if kind == "join":
+        if name in online_players:
+            return  # avoid duplicate panels
+        online_players.add(name)
+        _show_player_panel(name, addr, "join")
+    else:
+        if name not in online_players:
+            return  # only notify for players we saw join this session
+        online_players.discard(name)
+        _show_player_panel(name, None, "leave")

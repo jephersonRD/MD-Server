@@ -100,6 +100,39 @@ def list_servers() -> list:
     return out
 
 
+def detect_type_from_files(sdir: str) -> str:
+    """Detect server type from the real files when metadata is missing."""
+    try:
+        names = [f.lower() for f in os.listdir(sdir)]
+    except Exception:
+        return "unknown"
+    for n in names:
+        if n.endswith(".jar") and ("forge" in n):
+            return "forge"
+    for n in names:
+        if n.endswith(".jar") and ("fabric" in n):
+            return "fabric"
+    if "server.jar" in names:
+        return "vanilla"
+    if os.path.isdir(os.path.join(sdir, "mods")):
+        return "unknown"
+    return "unknown"
+
+
+def get_server_type(name: str) -> str:
+    """Server type from metadata (migrating old servers automatically)."""
+    meta = load_server_meta(name)
+    t = meta.get("type")
+    if t in ("vanilla", "fabric", "forge"):
+        return t
+    detected = detect_type_from_files(server_dir(name))
+    if detected in ("vanilla", "fabric", "forge"):
+        meta["type"] = detected
+        save_server_meta(name, meta)
+        return detected
+    return "unknown"
+
+
 def command_exists(cmd: str) -> bool:
     return shutil.which(cmd) is not None
 

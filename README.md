@@ -1,6 +1,6 @@
 <div align="center">
 
-![MD Server](https://img.shields.io/badge/MD%20Server-v1.1.3-cyan?style=for-the-badge)
+![MD Server](https://img.shields.io/badge/MD%20Server-v1.1.4--beta-cyan?style=for-the-badge)
 [![Termux](https://img.shields.io/badge/Platform-Termux%20%28Android%29-3b9e46?style=for-the-badge)](https://termux.dev)
 [![Java](https://img.shields.io/badge/Java-21%20%2F%2017-e76f00?style=for-the-badge)](https://adoptium.net)
 [![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](LICENSE)
@@ -44,6 +44,7 @@ pkg update -y && pkg install -y git python && cd ~ && if [ -d MD-Server/.git ]; 
 > ℹ️ La primera vez te preguntará el idioma y guía todo el proceso. Al abrir MD Server verás el menú principal: **[1] Crear servidor**, **[2] Mis servidores**, **[3] Configuración**, **[4] Salir**.
 > ℹ️ On first use it asks for your language and guides you through the entire process. When you open MD Server you'll see the main menu: **[1] Create Server**, **[2] My Servers**, **[3] Settings**, **[4] Exit**.
 >
+> 🆕 **v1.1.4-beta**: la consola ya no se rompe con texto raro de Minecraft (se imprime siempre como texto literal, sin errores de markup) y el lector de consola nunca se detiene por una línea problemática. Detecta automáticamente la **entrada y salida de jugadores** y muestra paneles azules **🔵 JUGADOR CONECTADO / 🔵 JUGADOR DESCONECTADO** (compatible con formatos antiguos tipo 1.7.10 `<Steve>[/127.0.0.1:port] logged in` y modernos `<Steve> joined the game`), una sola vez por evento y sin inventar direcciones. En **Crear servidor**, Fabric y Forge aparecen como **PRÓXIMAMENTE** (solo Vanilla está disponible por ahora) y el menú del servidor se adapta al tipo: Vanilla sin opciones de Mods/Plugins, Fabric/Forge con ellas, renumeradas automáticamente (detección de tipo también para servidores antiguos).
 > 🆕 **v1.1.3**: cuando el servidor Minecraft termina de iniciar (`Done ...!`), MD Server muestra automáticamente un panel **✓ SERVIDOR ONLINE** con las direcciones de conexión (`127.0.0.1:PUERTO` y la IP de la red local detectada) justo antes del prompt de la consola. **v1.1.2**: gestión completa de servidores — menú principal con **Mis servidores** (ver, iniciar, detener, consola, información, configuración, renombrar y eliminar con doble confirmación). Detecta automáticamente los servidores creados en versiones anteriores. **v1.1.1**: selector de versiones corregido (escribe 1.7.10, 1.12.2, 1.16.5 sin volver al menú), mensajes claros cuando Mojang no responde (lista local de respaldo) y aviso si la versión requiere Java 8 (no disponible en Termux). **v1.1.0**: instalador y actualizador automático. **v1.0.1**: menús 100% numéricos y RAM por número.
 
 ---

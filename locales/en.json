@@ -296,5 +296,15 @@
   "online.no_local_ip": "Could not automatically detect the local network IP.",
   "online.local_fallback": "You can connect from this device using: 127.0.0.1:{port}",
   "online.internet": "INTERNET",
-  "online.internet_desc": "Not configured. To allow connections from the Internet you can set up a tunnel like Playit.gg or Tailscale (Connection menu)."
+  "online.internet_desc": "Not configured. To allow connections from the Internet you can set up a tunnel like Playit.gg or Tailscale (Connection menu).",
+  "player.join_title": "PLAYER CONNECTED",
+  "player.leave_title": "PLAYER DISCONNECTED",
+  "player.user": "User",
+  "player.address": "Address",
+  "player.joined": "{name} joined the server.",
+  "player.left": "{name} left the server.",
+  "console.line_error": "Could not render a console line",
+  "wizard.coming_soon": "COMING SOON",
+  "wizard.soon_alert": "This option is not available yet. {loader} will be available soon.",
+  "type.unknown": "Unknown"
 }

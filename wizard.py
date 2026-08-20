@@ -63,17 +63,27 @@ def _pick_version(versions):
             continue
 
 
+def _pick_type():
+    """Vanilla is the only available type for now; Fabric/Forge shown but disabled."""
+    opts = [
+        (t("wizard.vanilla"), t("wizard.vanilla_desc")),
+        (f"[dim]{t('wizard.fabric')} — {t('wizard.coming_soon')}[/dim]",),
+        (f"[dim]{t('wizard.forge')} — {t('wizard.coming_soon')}[/dim]",),
+    ]
+    while True:
+        i = int(menus.ask(t("wizard.type"), opts))
+        if i == 1:
+            return "vanilla"
+        loader = t("wizard.fabric") if i == 2 else t("wizard.forge")
+        menus.warning(t("wizard.soon_alert").format(loader=loader))
+        continue
+
+
 def run_wizard(auto_ram=None):
     """Guided server creation. Returns (server_name, meta)."""
     menus.title(t("wizard.title"))
 
-    i = int(menus.ask(
-        t("wizard.type"),
-        [(t("wizard.vanilla"), t("wizard.vanilla_desc")),
-         (t("wizard.fabric"), t("wizard.fabric_desc")),
-         (t("wizard.forge"), t("wizard.forge_desc"))],
-    ))
-    srv_type = ["vanilla", "fabric", "forge"][i - 1]
+    srv_type = _pick_type()
 
     # versions
     console.print(f"[dim]{t('wizard.version_fetching')}[/dim]")

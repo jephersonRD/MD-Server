@@ -27,103 +27,108 @@ def status_label(name):
 
 def dashboard(name):
     meta = config.load_server_meta(name)
+    srv_type = config.get_server_type(name)
     while True:
         console.clear()
+        type_label = t("type.unknown") if srv_type == "unknown" else srv_type.title()
         header = Table(show_header=False, border_style="cyan", box=None, padding=(0, 2))
         header.add_row(t("dash.server"), f"[bold]{meta.get('name', name)}[/bold]")
         header.add_row(t("dash.minecraft"), meta.get("version", "?"))
-        header.add_row(t("dash.type"), f"[cyan]{meta.get('type', '?').title()}[/cyan]")
+        header.add_row(t("dash.type"), f"[cyan]{type_label}[/cyan]")
         header.add_row(t("dash.ram"), f"{meta.get('ram_mb', '?')} MB")
         header.add_row(t("dash.players"), "0 (console)")
         header.add_row(t("dash.status"), status_label(name))
 
+        running = server_manager.get_process(name)
         opts = []
-        if server_manager.get_process(name):
-            opts.append((f"■ {t('menu.stop')}",))
-            opts.append((f"↻ {t('menu.restart')}",))
-            opts.append((f"⌥ {t('console.title')}",))
-        else:
-            opts.append((f"▶ {t('menu.start')}",))
-            opts.append((f"[dim]↻ {t('menu.restart')}[/dim]",))
-            opts.append((f"[dim]⌥ {t('console.title')}[/dim]",))
+        handlers = []
 
-        srv_type = meta.get("type", "?")
-        opts.append((f"ℹ {t('admin.info')}",))
-        opts.append((f"🌍 {t('menu.world')}",))
-        opts.append((f"🧩 {t('menu.mods')}",))
-        opts.append((f"🔌 {t('menu.plugins')}",))
-        opts.append((f"⚙ {t('menu.settings')}",))
-        opts.append((f"✎ {t('admin.rename')}",))
-        opts.append((f"🗑 {t('admin.delete')}",))
-        opts.append((f"💾 {t('menu.backups')}",))
-        opts.append((f"📊 {t('menu.monitor')}",))
-        opts.append((f"🌐 {t('menu.connection')}",))
-        opts.append((f"📁 {t('menu.filemgr')}",))
-        opts.append((t("change_lang"),))
-        opts.append((f"← {t('menu.back')}",))
-        opts.append((t("menu.quit"),))
-        N_ACTIONS = 16
+        def add(label, fn):
+            opts.append((label,))
+            handlers.append(fn)
+
+        if running:
+            add(f"■ {t('menu.stop')}", lambda: _stop(name))
+            add(f"↻ {t('menu.restart')}", lambda: _restart(name))
+            add(f"⌥ {t('console.title')}", lambda: _console(name))
+        else:
+            add(f"▶ {t('menu.start')}", lambda: _start(name))
+            add(f"[dim]↻ {t('menu.restart')}[/dim]", lambda: _restart(name))
+            add(f"[dim]⌥ {t('console.title')}[/dim]", lambda: _console(name))
+
+        add(f"ℹ {t('admin.info')}", lambda: server_info(name))
+        add(f"🌍 {t('menu.world')}", lambda: world_menu(name))
+        if srv_type in ("fabric", "forge"):
+            add(f"🧩 {t('menu.mods')}", lambda: _mods(name))
+            add(f"🔌 {t('menu.plugins')}", lambda: _plugins(name, srv_type))
+        add(f"⚙ {t('menu.settings')}", lambda: settings_menu(name))
+        add(f"✎ {t('admin.rename')}", lambda: rename_server(name))
+        add(f"🗑 {t('admin.delete')}", lambda: _delete(name))
+        add(f"💾 {t('menu.backups')}", lambda: backup_menu(name))
+        add(f"📊 {t('menu.monitor')}", lambda: monitor(name, meta))
+        add(f"🌐 {t('menu.connection')}", lambda: connection(name, meta))
+        add(f"📁 {t('menu.filemgr')}", lambda: file_manager(name))
+        add(t("change_lang"), lambda: change_language())
+        add(f"← {t('menu.back')}", lambda: "back")
+        add(t("menu.quit"), lambda: "quit")
 
         console.print(Panel(header, border_style="bright_cyan",
                             title=f"[bold]MD SERVER — {name}[/bold]", padding=(0, 1)))
         choice = menus.ask(t("menu.main_title"), opts)
-        n = int(choice)
-        if n == N_ACTIONS + 1:
+        n = int(choice) - 1
+        if n < 0 or n >= len(handlers):
+            continue
+        res = handlers[n]()
+        if res == "back":
             return
-        if n == N_ACTIONS + 2:
+        if res == "quit":
             console.print(f"[bold cyan]{t('exit.bye')}[/bold cyan]")
             raise SystemExit(0)
 
-        if n == 1:
-            if server_manager.get_process(name):
-                server_manager.stop_server(name)
-                menus.success(t("stop.done"))
-            else:
-                menus.info(t("start.starting"))
-                if server_manager.start_server(name):
-                    run_console(name)
-                else:
-                    menus.error("Failed to start (server.jar missing / RAM too low?)")
-        elif n == 2:
-            if not server_manager.get_process(name):
-                menus.warning(t("console.not_running"))
-                continue
-            menus.info(t("restart.restarting"))
-            server_manager.restart_server(name)
-            run_console(name)
-        elif n == 3:
-            if not server_manager.get_process(name):
-                menus.warning(t("console.not_running"))
-                continue
-            run_console(name)
-        elif n == 4:
-            server_info(name)
-        elif n == 5:
-            world_menu(name)
-        elif n == 6:
-            from managers import mod_manager
-            mod_menu(name, mod_manager)
-        elif n == 7:
-            from managers import plugin_manager
-            plugin_menu(name, srv_type, plugin_manager)
-        elif n == 8:
-            settings_menu(name)
-        elif n == 9:
-            rename_server(name)
-        elif n == 10:
-            from ui.my_servers import delete_server
-            if delete_server(name):
-                return
-        elif n == 11:
-            backup_menu(name)
-        elif n == 12:
-            monitor(name, meta)
-        elif n == 13:
-            connection(name, meta)
-        elif n == 14:
-            file_manager(name)
-        elif n == 15:
-            change_language()
+
+def _stop(name):
+    server_manager.stop_server(name)
+    menus.success(t("stop.done"))
+
+
+def _start(name):
+    menus.info(t("start.starting"))
+    if server_manager.start_server(name):
+        run_console(name)
+    else:
+        menus.error("Failed to start (server.jar missing / RAM too low?)")
+
+
+def _restart(name):
+    if not server_manager.get_process(name):
+        menus.warning(t("console.not_running"))
+        return
+    menus.info(t("restart.restarting"))
+    server_manager.restart_server(name)
+    run_console(name)
+
+
+def _console(name):
+    if not server_manager.get_process(name):
+        menus.warning(t("console.not_running"))
+        return
+    run_console(name)
+
+
+def _mods(name):
+    from managers import mod_manager
+    mod_menu(name, mod_manager)
+
+
+def _plugins(name, srv_type):
+    from managers import plugin_manager
+    plugin_menu(name, srv_type, plugin_manager)
+
+
+def _delete(name):
+    from ui.my_servers import delete_server
+    if delete_server(name):
+        return "back"
 
 
 def world_menu(name):
