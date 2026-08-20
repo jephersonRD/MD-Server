@@ -1,0 +1,122 @@
+https://github.com/MDSERVER
+sale 3se user como colaborad9r y no lo es 
+además de que ─────────────────────────────────────────────────────────────╮│ Select language / Selecciona el idioma                      │
+╰─────────────────────────────────────────────────────────────╯   Español  🇪🇸                                                    English  🇺🇸                                                 
+> 1                                                            Invalid option.                                                > ES                                                           ╭─────────────────────────────────────────────────────────────╮
+│                                                             │
+│  Bienvenido a MD Server                                     │
+│                                                             │
+│  Esta herramienta te guiará para crear, configurar y        │
+│  ejecutar tu propio servidor de Minecraft Java en este      │
+│  dispositivo, paso a paso.                                  │
+│                                                             │
+│  No se necesitan conocimientos técnicos. MD Server se       │
+│  encarga de casi todo automáticamente.                      │
+│                                                             │
+╰─────────────────────────────────────────────────────────────╯
+
+╭─────────────────────────────╮
+│ INFORMACIÓN DEL DISPOSITIVO │
+╰─────────────────────────────╯
+╭──────────────── INFORMACIÓN DEL DISPOSITIVO ────────────────╮
+│   RAM            5.4 GB                                     │
+│   Disponible     958.0 MB                                   │
+│   CPU            8 cores                                    │
+│   Arquitectura   ARM64                                      │
+│   Android        13                                         │
+│   Termux         ?                                          │
+│   Almacenamiento 107.1 GB                                   │
+│   Libre          2.5 GB                                     │
+│   Java           21                                         │
+│   Python         3.13.13                                    │
+│   Internet       Conectado✓                                 │
+╰─────────────────────────────────────────────────────────────╯
+
+Press Enter to continue ...
+╭──────────────────────────╮
+│ CREAR SERVIDOR MINECRAFT │
+╰──────────────────────────╯
+
+╭─────────────────────────────────────────────────────────────╮
+│ Tipo de servidor                                            │
+╰─────────────────────────────────────────────────────────────╯
+   Vanilla  - Minecraft oficial, sin mods
+   Fabric  - Cargador de mods ligero
+   Forge  - Cargador de mods clásico
+
+> Vanilla
+Obteniendo versiones disponibles...
+
+╭─────────────────────────────────────────────────────────────╮
+│ Versión de Minecraft                                        │
+╰─────────────────────────────────────────────────────────────╯
+  [26.2] 26.2
+  [26.1.2] 26.1.2
+  [26.1.1] 26.1.1
+  [26.1] 26.1
+  [1.21.11] 1.21.11
+  [1.21.10] 1.21.10
+  [1.21.9] 1.21.9
+  [1.21.8] 1.21.8
+  [1.21.7] 1.21.7
+  [1.21.6] 1.21.6
+  [1.21.5] 1.21.5
+  [1.21.4] 1.21.4
+  [1.21.3] 1.21.3
+  [1.21.2] 1.21.2
+  [1.21.1] 1.21.1
+  [1.21] 1.21
+  [1.20.6] 1.20.6
+  [1.20.5] 1.20.5
+  [1.20.4] 1.20.4
+  [1.20.3] 1.20.3
+  [1.20.2] 1.20.2
+  [1.20.1] 1.20.1
+  [1.20] 1.20
+  [1.19.4] 1.19.4
+  [1.19.3] 1.19.3
+  [1.19.2] 1.19.2
+  [1.19.1] 1.19.1
+  [1.19] 1.19
+  [1.18.2] 1.18.2
+  [1.18.1] 1.18.1
+  [1.18] 1.18
+  [1.17.1] 1.17.1
+  [1.17] 1.17
+  [1.16.5] 1.16.5
+  [1.16.4] 1.16.4
+  [1.16.3] 1.16.3
+  [1.16.2] 1.16.2
+  [1.16.1] 1.16.1
+  [1.16] 1.16
+  [1.15.2] 1.15.2
+
+> 1.7.10
+Invalid option.
+> 1.15.2
+
+╭─────────────────────────────────────────────────────────────╮
+│ RAM recomendada para el servidor: 2048 MB                   │
+╰─────────────────────────────────────────────────────────────╯
+   Usar la cantidad recomendada
+   Elegir manualmente
+
+>
+Invalid option.
+> 1
+Invalid option.
+> Usar la cantidad recomendada
+Invalid option.
+> 2048
+Invalid option.
+> 2048 MB
+Invalid option.
+> 200
+Invalid option.
+>  2028
+Invalid option.
+
+al momento de poner la ram no me dkea nasa que para elegir todo sea con 1,2,3,4 etc y en ma ram
+solo recitamos escribir la cantidad por ejemplo 2048 y ya etc y para elegir ma versión de fabric ,forge,vanilla
+sea con números ademas solo salen todas las versiones solo desd la 1.15.2 hasta la última y yo quiero crear un servidor en versiónes antiguas p9r ejemplo en la 1.7.10 o 1.8.9 etc 
+corrige los errores y borrar al colaborador que no esta si necesitas cambiar el nombre del proyecto si es necesario hazlo al Termux-MD etc y sube una nueva reléase al repo
