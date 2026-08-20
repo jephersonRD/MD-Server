@@ -86,6 +86,12 @@ def run_wizard(auto_ram=None):
         menus.warning(t("wizard.versions_fallback"))
     version = _pick_version(versions)
 
+    # Clear warning for very old versions that need Java 8 (not available in Termux)
+    if version_manager.needs_java8(version):
+        if not menus.confirm(t("wizard.old_java_warning").format(version=version)):
+            menus.info(t("common.cancel"))
+            return None, None
+
     # RAM
     dev = device_info.collect()
     if auto_ram is None:
@@ -124,10 +130,6 @@ def run_wizard(auto_ram=None):
             required_java = req if isinstance(req, int) else required_java
         except Exception:
             pass
-    if version_manager.needs_java8(version):
-        if not menus.confirm(t("wizard.old_java_warning").format(version=version)):
-            menus.info(t("common.cancel"))
-            return None, None
     menus.info(f"Java {required_java}+ required")
     if not java_manager.ensure_java(required_java, auto=True):
         menus.error("Java installation failed")
