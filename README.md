@@ -65,7 +65,9 @@ pkg update -y && pkg install -y git python && cd ~ && if [ -d MD-Server/.git ]; 
 mdserver
 ```
 
-<video src="https://raw.githubusercontent.com/jephersonRD/MD-Server/main/assets/video/video-260821-093935_cGgNtT0K.mp4" controls width="600"></video>
+### 🎬 Video demo
+
+**[▶ Ver video de MD Server](assets/video/video-260821-093935_cGgNtT0K.mp4)** (clic para reproducir/descargar)
 
 Ejemplos:
 
