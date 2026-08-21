@@ -67,8 +67,8 @@ def _pick_type():
     """Vanilla is the only available type for now; Fabric/Forge shown but disabled."""
     opts = [
         (t("wizard.vanilla"), t("wizard.vanilla_desc")),
-        (f"[yellow dim]🧩 {t('wizard.fabric')} — {t('wizard.coming_soon')}[/yellow dim]",),
-        (f"[yellow dim]🔥 {t('wizard.forge')} — {t('wizard.coming_soon')}[/yellow dim]",),
+        (f"[yellow dim]{t('wizard.fabric')} — {t('wizard.coming_soon')}[/yellow dim]",),
+        (f"[yellow dim]{t('wizard.forge')} — {t('wizard.coming_soon')}[/yellow dim]",),
     ]
     while True:
         i = int(menus.ask(t("wizard.type"), opts))
