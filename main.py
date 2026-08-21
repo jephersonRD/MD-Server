@@ -2,7 +2,7 @@
 import os
 import sys
 
-__version__ = "1.1.4-beta"
+__version__ = "1.1.5-beta"
 __repo__ = "jephersonRD/MD-Server"
 __branch__ = "main"
 
@@ -47,7 +47,7 @@ def auto_update(argv=None, verbose=False):
         return
     if not remote or remote == head:
         if verbose:
-            print(f"\033[0;32m✓ MD Server está actualizado | up to date (v{__version__})\033[0m")
+            print(f"\033[0;32m✓ {t('update.up_to_date').format(version=__version__)}\033[0m")
         return  # already up to date
     try:
         subprocess.run(["git", "-C", APP_DIR, "reset", "--hard", "origin/" + __branch__],
@@ -56,7 +56,7 @@ def auto_update(argv=None, verbose=False):
                        capture_output=True, text=True, timeout=60)
     except Exception:
         pass
-    print("\n\033[1;36m🔄 MD Server updated to the latest version.\033[0m\n")
+    print(f"\n\033[1;36m🔄 {t('update.updated')}\033[0m\n")
     os.environ["MD_SERVER_UPDATED"] = "1"
     try:
         sys.stdout.flush()
@@ -161,10 +161,10 @@ def global_settings_menu():
             choose_language()
         elif n == 2:
             show_device_analysis()
-            console.input("Enter ")
+            console.input(t("common.enter") + " ")
         elif n == 3:
             auto_update(["--check-update"], verbose=True)
-            console.input("Enter ")
+            console.input(t("common.enter") + " ")
         else:
             return
 
@@ -197,7 +197,7 @@ def main():
             welcome()
             show_device_analysis()
             config.set_config("first_run_done", True)
-            console.print("[dim]Press Enter to continue ...[/dim]", end="")
+            console.print(f"[dim]{t('common.press_enter')}[/dim]", end="")
             try:
                 input()
             except (EOFError, KeyboardInterrupt):

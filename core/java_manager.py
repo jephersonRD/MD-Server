@@ -32,7 +32,7 @@ def install_java(required: int = 17, auto: bool = False):
         if not console.input(f"[bold]{t('common.confirm')} ({t('common.yes')}/{t('common.no')}): [/bold]").strip().lower() in ("y", "yes", "s", "si", "sí"):
             return False
     console.print(f"[cyan]{t('install.pkg')} {pkg} ...[/cyan]")
-    with console.status("pkg install ..."):
+    with console.status(t("status.installing_java")):
         r = subprocess.run(["pkg", "install", "-y", pkg], text=True)
     if r.returncode != 0:
         console.print(f"[bold red][✗] {t('common.error')}: pkg install {pkg}[/bold red]")

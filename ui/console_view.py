@@ -110,7 +110,9 @@ def _player_event(line: str):
 
 def _show_player_panel(name, addr, kind):
     title = t("player.leave_title") if kind == "leave" else t("player.join_title")
-    lines = [f"  👤 {t('player.user')}: [bold]{name}[/bold]"]
+    border = "red" if kind == "leave" else "blue"
+    name_color = "bold red" if kind == "leave" else "bold"
+    lines = [f"  👤 {t('player.user')}: [{name_color}]{name}[/{name_color}]"]
     if addr:
         lines.append(f"  📡 {t('player.address')}: [bold cyan]{addr}[/bold cyan]")
     msg = (t("player.left").format(name=name) if kind == "leave"
@@ -120,8 +122,8 @@ def _show_player_panel(name, addr, kind):
     console.print()
     console.print(Panel(
         "\n".join(lines),
-        border_style="blue",
-        title=f"[bold blue]🔵 {title}[/bold blue]",
+        border_style=border,
+        title=f"[bold {border}]{'🔴' if kind == 'leave' else '🔵'} {title}[/bold {border}]",
         padding=(1, 2),
     ))
     console.print()
@@ -176,7 +178,7 @@ def run_console(name: str):
             console.print(f"[bold red]{t('console.server_stopped')}[/bold red]")
             break
         try:
-            cmd = console.input("[bold][Command][/bold] > ").strip()
+            cmd = console.input(f"[bold][{t('console.command_prompt')}][/bold] > ").strip()
         except (EOFError, KeyboardInterrupt):
             break
         low = cmd.lower()

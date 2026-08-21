@@ -95,26 +95,62 @@ def rss_mb(name):
 
 
 def monitor(name, meta):
-    menus.title(t("monitor.title"), border="green")
-    if server_manager.get_process(name):
-        p1 = _read_stat()
-        time.sleep(1.0)
-        p2 = _read_stat()
-        cpu = cpu_usage(name)
-        ram = rss_mb(name)
-        uptime = server_manager.process_uptime(name)
-        st = device_info.storage_info(config.server_dir(name))
-        table = Table(show_header=False, border_style="green", box=None, expand=False, padding=(0, 2))
-        table.add_row(t("monitor.cpu"), f"[cyan]{cpu:.1f}%[/cyan]")
-        table.add_row(t("monitor.ram"), f"[cyan]{ram:.0f} MB[/cyan] / {meta.get('ram_mb', '?')} MB")
-        table.add_row(t("monitor.tps"), "[dim]ideal ~20 — see console[/dim]")
-        table.add_row(t("monitor.players"), "[dim]see console[/dim]")
-        table.add_row(t("monitor.uptime"), f"{int(uptime // 3600):02d}:{int(uptime // 60 % 60):02d}:{int(uptime % 60):02d}")
-        table.add_row(t("monitor.storage"), f"{human(st[2])} free / {human(st[0])}")
-        console.print(Panel(table, border_style="green", title=f"[bold]● {t('monitor.active')}[/bold]", padding=(0, 1)))
-    else:
-        console.print(Panel(f"[dim]{t('monitor.stopped')}[/dim]", border_style="yellow", padding=(0, 1)))
-    console.input("Enter ")
+    import threading as _threading
+    stop = _threading.Event()
+
+    def refresh():
+        while not stop.is_set():
+            console.clear()
+            menus.title(t("monitor.title"), border="green")
+            running = server_manager.get_process(name)
+            status_text = f"[green]● {t('status.running')}[/green]" if running else f"[dim]○ {t('status.stopped')}[/dim]"
+
+            table = Table(show_header=False, border_style="green", box=None, expand=False, padding=(0, 2))
+            table.add_row(t("dash.server"), f"[bold]{meta.get('name', name)}[/bold]")
+            table.add_row(t("monitor.version"), f"{meta.get('version', '?')} ({meta.get('type', '?').title()})")
+            table.add_row(t("dash.status"), status_text)
+
+            if running:
+                cpu = cpu_usage(name)
+                ram = rss_mb(name)
+                assigned = meta.get("ram_mb", "?")
+                uptime = server_manager.process_uptime(name)
+                st = device_info.storage_info(config.server_dir(name))
+                table.add_row(t("monitor.cpu_usage"), f"[cyan]{cpu:.1f}%[/cyan]")
+                table.add_row(t("monitor.ram_used"), f"[cyan]{ram:.0f} MB[/cyan]")
+                table.add_row(t("monitor.ram_assigned"), f"{assigned} MB")
+                table.add_row(t("monitor.uptime_val"),
+                              f"{int(uptime // 3600):02d}:{int(uptime // 60 % 60):02d}:{int(uptime % 60):02d}")
+                table.add_row(t("monitor.storage_val"), f"{human(st[2])} free / {human(st[0])}")
+                try:
+                    pid = server_manager.process_pid(name)
+                    if pid:
+                        cmdline_path = f"/proc/{pid}/cmdline"
+                        with open(cmdline_path, "rb") as cf:
+                            cmdline = cf.read().decode(errors="replace").replace("\x00", " ")
+                        if "server.jar" in cmdline or "forge" in cmdline or "fabric" in cmdline:
+                            table.add_row(t("dash.players"), "[dim]see console[/dim]")
+                except Exception:
+                    pass
+            else:
+                table.add_row("", f"[dim]{t('monitor.stopped')}[/dim]")
+
+            console.print(Panel(table, border_style="green",
+                                title=f"[bold]● {t('monitor.title')}[/bold]", padding=(0, 1)))
+            console.print(f"[dim]{t('common.press_enter')}[/dim]", end="")
+            try:
+                stop.wait(timeout=2.0)
+            except KeyboardInterrupt:
+                break
+
+    th = _threading.Thread(target=refresh, daemon=True)
+    th.start()
+    try:
+        console.input()
+    except (EOFError, KeyboardInterrupt):
+        pass
+    stop.set()
+    th.join(timeout=3)
 
 
 def connection(name, meta):
@@ -167,7 +203,7 @@ def external(name, port):
     with console.status(f"{t('install.pkg')} ..."):
         r = os.system(f"pkg install -y {'playit-by-playit' if choice == '1' else 'tailscale'}")
     if r == 0:
-        menus.success("Installed")
+        menus.success(t("common.installed_success"))
         open_steps(t("net.playit_how"), t("net.playit_steps"))
 
 
@@ -312,4 +348,4 @@ def file_manager(name):
     console.print(f"[bold]{t('filemgr.backups')}[/bold]: {backup_manager.backups_root(name)}")
     console.print()
     menus.info("~ cd " + config.server_dir(name))
-    console.input("Enter ")
+    console.input(t("common.enter") + " ")

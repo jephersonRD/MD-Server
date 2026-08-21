@@ -3,6 +3,8 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
+from core.i18n import t
+
 console = Console()
 
 
@@ -34,11 +36,11 @@ def ask(question: str, options: list, prompt="> ", allow_custom=False, multiple=
         try:
             n = int(choice)
         except ValueError:
-            console.print("[red]Invalid option. Choose a number.[/red]")
+            console.print(f"[red]{t('common.invalid_option')}[/red]")
             continue
         if 1 <= n <= len(options):
             return str(n)
-        console.print("[red]Invalid option. Choose a number.[/red]")
+        console.print(f"[red]{t('common.invalid_option')}[/red]")
 
 
 def confirm(msg: str, default_yes=True) -> bool:
@@ -58,10 +60,10 @@ def input_text(prompt: str, default: str = None, validate=None) -> str:
         if not ans and default:
             ans = default
         if not ans:
-            console.print("[red]This field cannot be empty.[/red]")
+            console.print(f"[red]{t('common.field_empty')}[/red]")
             continue
         if validate and not validate(ans):
-            console.print("[red]Invalid value.[/red]")
+            console.print(f"[red]{t('common.invalid_value')}[/red]")
             continue
         return ans
 
@@ -77,13 +79,13 @@ def input_int(prompt: str, default: int = None, minimum: int = None, maximum: in
         try:
             val = int(ans)
         except ValueError:
-            console.print("[red]Enter a number.[/red]")
+            console.print(f"[red]{t('common.enter_number')}[/red]")
             continue
         if minimum is not None and val < minimum:
-            console.print(f"[red]Min value: {minimum}[/red]")
+            console.print(f"[red]{t('common.min_value')} {minimum}[/red]")
             continue
         if maximum is not None and val > maximum:
-            console.print(f"[red]Max value: {maximum}[/red]")
+            console.print(f"[red]{t('common.max_value')} {maximum}[/red]")
             continue
         return val
 

@@ -32,7 +32,7 @@ def my_servers_menu():
         console.clear()
         banner.show(console)
         menus.info(t("ms.no_servers"))
-        console.input("Enter ")
+        console.input(t("common.enter") + " ")
         return None
     while True:
         console.clear()

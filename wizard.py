@@ -27,10 +27,10 @@ def _pick_version(versions):
         opts = [(v,) for v in chunk]
         more = offset + PAGE < len(versions)
         if more:
-            opts.append(("… Versiones más antiguas",))
-        opts.append(("✎ Otra versión (escribe el número, ej. 1.7.10)",))
+            opts.append((t("wizard.older_versions"),))
+        opts.append((t("wizard.custom_version"),))
         if offset > 0:
-            opts.append(("← Volver a versiones más recientes",))
+            opts.append((t("wizard.back_newer"),))
         choice = menus.ask(t("wizard.version"), opts, allow_custom=True)
         if not choice.isdigit():
             # The user typed a version directly (e.g. "1.7.10") — accept it.
@@ -140,9 +140,9 @@ def run_wizard(auto_ram=None):
             required_java = req if isinstance(req, int) else required_java
         except Exception:
             pass
-    menus.info(f"Java {required_java}+ required")
+    menus.info(t("wizard.java_required").format(java=required_java))
     if not java_manager.ensure_java(required_java, auto=True):
-        menus.error("Java installation failed")
+        menus.error(t("wizard.java_failed"))
         return None, None
 
     # internet check
@@ -153,7 +153,7 @@ def run_wizard(auto_ram=None):
     # Folders
     sdir = config.server_dir(name)
     if os.path.exists(sdir) and os.listdir(sdir):
-        menus.error(f"{t('common.error')}: {t('wizard.server_name')} '{name}' {t('common.name')} already exists")
+        menus.error(f"{t('common.error')}: {t('wizard.already_exists')} '{name}'")
         return None, None
     Path(sdir).mkdir(parents=True, exist_ok=True)
     server_manager.create_folder_structure(sdir, srv_type)

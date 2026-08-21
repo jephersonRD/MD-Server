@@ -96,7 +96,7 @@ def _start(name):
     if server_manager.start_server(name):
         run_console(name)
     else:
-        menus.error("Failed to start (server.jar missing / RAM too low?)")
+        menus.error(t("common.server_start_failed"))
 
 
 def _restart(name):

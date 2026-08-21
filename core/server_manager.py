@@ -121,7 +121,7 @@ def install_fabric(server_dir, version: str, loader: str, progress_cb=None):
 
     console = ui_progress.console
     console.print(f"[cyan]▸ {t('wizard.downloading')}: [bold]fabric-server-launch.jar[/bold] ...[/cyan]")
-    with console.status("Fabric server ..."):
+    with console.status(t("status.fabric_install")):
         import subprocess
         r = subprocess.run(
             ["java", "-jar", dest, "server", "-mcversion", version, "-loader", loader, "-dir", server_dir],
@@ -150,7 +150,7 @@ def install_forge(server_dir, minecraft: str, forge: str, progress_cb=None):
             raise RuntimeError(ds.error)
     console = ui_progress.console
     console.print(f"[cyan]▸ {t('wizard.downloading')}: [bold]forge-{minecraft}-{forge}.jar[/bold] ...[/cyan]")
-    with console.status("Forge installServer ..."):
+    with console.status(t("status.forge_install")):
         import subprocess
         r = subprocess.run(["java", "-jar", dest, "--installServer"],
                            capture_output=True, text=True, cwd=server_dir, timeout=900)
