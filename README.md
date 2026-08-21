@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="assets/iconos/file_0000000002bc820ca84a25960a6c896b.png" alt="MD Server Logo" width="200"/>
+<img src="assets/iconos/file_0000000002bc820ca84a25960a6c896b.png" alt="MD Server - Minecraft Java Server Manager for Android" width="200"/>
 
 ![MD Server](https://img.shields.io/badge/MD%20Server-v1.1.5--beta-cyan?style=for-the-badge)
 [![Termux](https://img.shields.io/badge/Platform-Termux%20%28Android%29-3b9e46?style=for-the-badge)](https://termux.dev)
@@ -18,14 +18,22 @@
  ╚═╝     ╚═╝╚═════╝   ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═╝
 ```
 
-**Convierte tu teléfono Android en un servidor de Minecraft Java.**
-**Turn your Android phone into a Minecraft Java server.**
+**Crea y gestiona servidores de Minecraft Java en Android con Termux — sin root, sin complicaciones.**
+**Create and manage Minecraft Java servers on Android using Termux — no root, no hassle.**
 
 </div>
 
 ---
 
-## 📥 Zona de descarga | Download zone
+## ¿Qué es MD Server?
+
+**MD Server** es un gestor de servidores de **Minecraft Java** diseñado para dispositivos **Android** que ejecutan **Termux**. Te permite crear, configurar y administrar servidores de Minecraft completos directamente desde la terminal de tu teléfono, sin necesidad de root ni conocimientos técnicos avanzados.
+
+**MD Server** is a **Minecraft Java server manager** built for **Android** devices running **Termux**. It lets you create, configure, and administer full Minecraft Java servers right from your phone's terminal — no root required and no advanced technical knowledge needed.
+
+---
+
+## 📥 Instalación rápida | Quick install
 
 Copia **una** de estas líneas en Termux y pulsa Enter (**este es el código que pegarás en Termux** / **this is the code you paste in Termux**):
 
@@ -45,7 +53,6 @@ pkg update -y && pkg install -y git python && cd ~ && if [ -d MD-Server/.git ]; 
 
 > ℹ️ La primera vez te preguntará el idioma y guía todo el proceso. Al abrir MD Server verás el menú principal: **[1] Crear servidor**, **[2] Mis servidores**, **[3] Configuración**, **[4] Salir**.
 > ℹ️ On first use it asks for your language and guides you through the entire process. When you open MD Server you'll see the main menu: **[1] Create Server**, **[2] My Servers**, **[3] Settings**, **[4] Exit**.
->
 
 ---
 
@@ -95,7 +102,7 @@ mdserver
 
 ---
 
-## 🖥️ Mis servidores | My Servers
+## 🖥️ Gestión de servidores | Server management
 
 Al abrir MD Server verás el menú principal:
 
@@ -105,6 +112,18 @@ Al abrir MD Server verás el menú principal:
 [3] Configuración
 [4] Salir
 ```
+
+### Crear servidor de Minecraft
+
+El asistente te guía paso a paso para crear un nuevo servidor:
+
+- **Tipo de servidor**: Vanilla (activo), Fabric y Forge (próximamente).
+- **Versión de Minecraft**: todas las versiones oficiales desde Mojang (1.7.10 hasta 1.21+).
+- **RAM asignada**: recomendación automática basada en tu dispositivo.
+- **Nombre personalizado** para identificar cada servidor.
+- Descarga automática del JAR con verificación SHA-1.
+
+### Gestionar servidores existentes
 
 Con **[2] Mis servidores** puedes gestionar todos tus servidores desde una sola pantalla:
 
@@ -118,6 +137,17 @@ Con **[2] Mis servidores** puedes gestionar todos tus servidores desde una sola 
 
 Los servidores creados con versiones anteriores de MD Server se **detectan automáticamente** — no tienes que volver a crearlos. Todo vive en `~/mdserver/servers/`.
 
+### Funciones adicionales
+
+- **Monitor en tiempo real**: CPU, RAM, uptime y almacenamiento del servidor.
+- **Gestión de mundos**: crear, importar, eliminar, respaldar y restaurar mundos.
+- **Gestión de mods** (para servidores Fabric/Forge): listar, importar y eliminar mods.
+- **Copias de seguridad**: respaldos manuales y automáticos con programación por intervalo.
+- **Detección de jugadores**: paneles visuales de conexión y desconexión con IP.
+- **Conexión**: detección automática de IP local y pública, soporte para Playit.gg y Tailscale.
+- **Idioma**: soporte completo para español e inglés, cambiable en cualquier momento.
+
+---
 
 ## 🗑️ Desinstalación | Uninstall
 
