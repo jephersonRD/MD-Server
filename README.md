@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/iconos/file_0000000002bc820ca84a25960a6c896b.png" alt="MD Server Logo" width="200"/>
+
 ![MD Server](https://img.shields.io/badge/MD%20Server-v1.1.5--beta-cyan?style=for-the-badge)
 [![Termux](https://img.shields.io/badge/Platform-Termux%20%28Android%29-3b9e46?style=for-the-badge)](https://termux.dev)
 [![Java](https://img.shields.io/badge/Java-21%20%2F%2017-e76f00?style=for-the-badge)](https://adoptium.net)
@@ -67,7 +69,7 @@ mdserver
 
 ### 🎬 Video demo
 
-**[▶ Ver video de MD Server](assets/video/video-260821-093935_cGgNtT0K.mp4)** (clic para reproducir/descargar)
+https://github.com/jephersonRD/MD-Server/releases/download/v1.1.5-beta/video-demo.mp4
 
 Ejemplos:
 
