@@ -112,7 +112,7 @@ def main_menu():
         console.clear()
         banner.show(console)
         choice = menus.ask(
-            t("main.title"),
+            f"{t('main.title')} [dim]v{__version__}[/dim]",
             [(f"✚ {t('main.create')}",),
              (f"🖥 {t('main.my_servers')}",),
              (f"⚙ {t('main.settings')}",),

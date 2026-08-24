@@ -349,6 +349,8 @@
   "wizard.java_verify_failed": "Error de verificación: se esperaba Java {expected}, pero se detectó Java {found}.",
   "wizard.java_not_available": "no está disponible para Termux",
   "wizard.back": "Volver",
+  "wizard.back_to_type": "Volver al tipo de servidor",
+  "wizard.back_to_version": "Volver a elegir versión",
   "java.incompatible": "Java incompatible",
   "java.recommended": "Java recomendada",
   "java.version_mismatch": "La versión de Java no coincide",

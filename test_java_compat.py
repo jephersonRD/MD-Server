@@ -179,6 +179,8 @@ def test_i18n_keys():
         "wizard.java_verify_failed",
         "wizard.java_not_available",
         "wizard.back",
+        "wizard.back_to_type",
+        "wizard.back_to_version",
         "java.incompatible",
         "java.recommended",
         "java.version_mismatch",
