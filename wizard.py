@@ -102,10 +102,14 @@ def _java_explanation(minecraft_version: str, java_version: int, recommended: in
 def _pick_java(minecraft_version: str):
     """Show Java selection screen with explanations. Returns chosen Java major version or None to go back."""
     recommended = java_manager.get_recommended_java(minecraft_version)
-    compatible = java_manager.get_compatible_java_versions(minecraft_version)
     installed = java_manager.detect_installed_java()
 
     while True:
+        # Only show versions that are installed or can be installed via Termux
+        compatible = [
+            v for v in java_manager.get_compatible_java_versions(minecraft_version)
+            if v in installed or java_manager.can_install_java(v)
+        ]
         console.print()
         lines = []
         lines.append(f"  {t('wizard.java_minecraft')}: [bold]{minecraft_version}[/bold]")

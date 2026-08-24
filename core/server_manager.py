@@ -264,8 +264,13 @@ def _pick_java_for_start(mc_version, meta):
 
     _console = Console()
     recommended = java_manager.get_recommended_java(mc_version)
-    compatible = java_manager.get_compatible_java_versions(mc_version)
     installed = java_manager.detect_installed_java()
+
+    # Only show versions that are installed or can be installed via Termux
+    compatible = [
+        v for v in java_manager.get_compatible_java_versions(mc_version)
+        if v in installed or java_manager.can_install_java(v)
+    ]
 
     while True:
         _console.print()
