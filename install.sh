@@ -72,7 +72,7 @@ echo -e "${CYAN}│${NC}   ${WHITE}██║ ╚═╝ ██║█████�
 echo -e "${CYAN}│${NC}   ${WHITE}╚═╝     ╚═╝╚═════╝   ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ${NC}   ${CYAN}│${NC}"
 echo -e "${CYAN}│${NC}                                                              ${CYAN}│${NC}"
 echo -e "${CYAN}│${NC}        ${GRAY}Minecraft Java Server Manager for Termux${NC}              ${CYAN}│${NC}"
-echo -e "${CYAN}│${NC}              ${MAGENTA}v1.1.8-beta${NC}  ${GRAY}·  Install / Update / Repair${NC}     ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}              ${MAGENTA}v1.2.0${NC}  ${GRAY}·  Install / Update / Repair${NC}          ${CYAN}│${NC}"
 echo -e "${CYAN}│${NC}                                                              ${CYAN}│${NC}"
 echo -e "${CYAN}╰${NC}$(box_line "─")${CYAN}╯${NC}"
 echo
