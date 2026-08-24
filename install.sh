@@ -265,16 +265,16 @@ section_end
 # ---------- python dependencies ----------
 install_pydeps() {
     local req="${REPO_DIR}/requirements.txt"
-    msg "Installing Python packages (rich, requests)..."
+    msg "Installing Python packages..."
     if [ -f "$req" ]; then
-        "$PYTHON" -m pip install -r "$req" 2>/dev/null || \
-        "$PYTHON" -m pip install --break-system-packages -r "$req" 2>/dev/null || \
-        "$PYTHON" -m pip install rich requests 2>/dev/null || \
-        "$PYTHON" -m pip install --break-system-packages rich requests 2>/dev/null || \
+        "$PYTHON" -m pip install -r "$req" >/dev/null 2>&1 || \
+        "$PYTHON" -m pip install --break-system-packages -r "$req" >/dev/null 2>&1 || \
+        "$PYTHON" -m pip install rich requests >/dev/null 2>&1 || \
+        "$PYTHON" -m pip install --break-system-packages rich requests >/dev/null 2>&1 || \
             die "Could not install Python dependencies. Run: $PYTHON -m pip install -r $req"
     else
-        "$PYTHON" -m pip install rich requests 2>/dev/null || \
-        "$PYTHON" -m pip install --break-system-packages rich requests 2>/dev/null || \
+        "$PYTHON" -m pip install rich requests >/dev/null 2>&1 || \
+        "$PYTHON" -m pip install --break-system-packages rich requests >/dev/null 2>&1 || \
             die "Could not install Python dependencies."
     fi
     ok "Python dependencies ready."
