@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Tests for MD Server v1.1.6-beta — Java compatibility system."""
+"""Tests for MD Server v1.1.7-beta — Java compatibility system."""
 import os
 import sys
 import json
@@ -10,6 +10,8 @@ from core.java_manager import (
     get_recommended_java,
     get_compatible_java_versions,
     is_java_compatible,
+    can_install_java,
+    TERMUX_JAVA_PACKAGES,
     KNOWN_JAVA_VERSIONS,
     migrate_old_server_meta,
     _JAVA_COMPAT,
@@ -81,17 +83,17 @@ def test_compatible_versions():
 def test_is_java_compatible():
     """Test compatibility checks."""
     cases = [
-        ("1.20.1", 17, True),   # recommended
-        ("1.20.1", 21, True),   # newer = compatible
-        ("1.20.1", 25, True),   # much newer = compatible
-        ("1.20.1", 8, False),   # too old = incompatible
-        ("1.20.1", 16, False),  # too old = incompatible
-        ("1.7.10", 8, True),    # recommended
-        ("1.7.10", 17, True),   # newer = compatible
-        ("1.7.10", 21, True),   # much newer = compatible
-        ("1.21.1", 21, True),   # recommended
-        ("1.21.1", 17, False),  # too old = incompatible
-        ("1.21.1", 8, False),   # too old = incompatible
+        ("1.20.1", 17, True),
+        ("1.20.1", 21, True),
+        ("1.20.1", 25, True),
+        ("1.20.1", 8, False),
+        ("1.20.1", 16, False),
+        ("1.7.10", 8, True),
+        ("1.7.10", 17, True),
+        ("1.7.10", 21, True),
+        ("1.21.1", 21, True),
+        ("1.21.1", 17, False),
+        ("1.21.1", 8, False),
     ]
     passed = 0
     failed = 0
@@ -106,17 +108,46 @@ def test_is_java_compatible():
     return failed == 0
 
 
+def test_can_install_java():
+    """Test which Java versions can be installed via Termux."""
+    cases = [
+        (8, False),
+        (16, False),
+        (17, True),
+        (21, True),
+        (25, True),
+    ]
+    passed = 0
+    failed = 0
+    for jver, expected in cases:
+        result = can_install_java(jver)
+        status = "✓" if result == expected else "✗"
+        if result == expected:
+            passed += 1
+        else:
+            failed += 1
+        print(f"  {status} Java {jver}: can_install={result} (expected {expected})")
+    return failed == 0
+
+
+def test_termux_packages_has_java25():
+    """Test that Java 25 is in TERMUX_JAVA_PACKAGES."""
+    if 25 in TERMUX_JAVA_PACKAGES:
+        print(f"  ✓ Java 25 in TERMUX_JAVA_PACKAGES: {TERMUX_JAVA_PACKAGES[25]}")
+        return True
+    else:
+        print(f"  ✗ Java 25 NOT in TERMUX_JAVA_PACKAGES")
+        return False
+
+
 def test_known_java_versions():
     """Test that all required Java versions are known."""
     required = {8, 16, 17, 21, 25}
     actual = set(KNOWN_JAVA_VERSIONS)
     missing = required - actual
-    extra = actual - required
     if missing:
         print(f"  ✗ Missing Java versions: {missing}")
         return False
-    if extra:
-        print(f"  ⚠ Extra Java versions: {extra}")
     print(f"  ✓ All required Java versions present: {sorted(required)}")
     return True
 
@@ -178,6 +209,16 @@ def test_i18n_keys():
         "wizard.java_downloading",
         "wizard.java_verify_failed",
         "wizard.java_not_available",
+        "wizard.java_not_available_termux",
+        "wizard.java_available_versions",
+        "wizard.java_explain_need",
+        "wizard.java_explain_recommended",
+        "wizard.java_explain_compatible",
+        "wizard.java_explain_incompatible",
+        "wizard.java_install_failed",
+        "wizard.java_install_failed_title",
+        "wizard.java_retry",
+        "wizard.java_choose_other",
         "wizard.back",
         "wizard.back_to_type",
         "wizard.back_to_version",
@@ -210,17 +251,17 @@ def test_i18n_keys():
 def test_version_string():
     """Test that version is correctly set."""
     from main import __version__
-    if __version__ == "1.1.6-beta":
+    if __version__ == "1.1.7-beta":
         print(f"  ✓ Version: {__version__}")
         return True
     else:
-        print(f"  ✗ Version: {__version__} (expected 1.1.6-beta)")
+        print(f"  ✗ Version: {__version__} (expected 1.1.7-beta)")
         return False
 
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("MD Server v1.1.6-beta — Test Suite")
+    print("MD Server v1.1.7-beta — Test Suite")
     print("=" * 60)
     print()
 
@@ -228,6 +269,8 @@ if __name__ == "__main__":
         ("Java Compatibility Matrix", test_java_compatibility_matrix),
         ("Compatible Versions Order", test_compatible_versions),
         ("Is Java Compatible", test_is_java_compatible),
+        ("Can Install Java", test_can_install_java),
+        ("Termux Packages has Java 25", test_termux_packages_has_java25),
         ("Known Java Versions", test_known_java_versions),
         ("Compat Table Entries", test_compat_table_has_all_entries),
         ("Unknown Version Defaults", test_unknown_version_defaults),

@@ -81,7 +81,13 @@ KNOWN_JAVA_VERSIONS = [8, 16, 17, 21, 25]
 TERMUX_JAVA_PACKAGES = {
     17: "openjdk-17",
     21: "openjdk-21",
+    25: "openjdk-25",
 }
+
+
+def can_install_java(java_version: int) -> bool:
+    """Check if a Java version can be installed via Termux pkg."""
+    return java_version in TERMUX_JAVA_PACKAGES
 
 # Java download URLs (Adoptium / Eclipse Temurin for Android/aarch64)
 # These are real, maintained URLs for headless JDK builds.
@@ -326,7 +332,9 @@ def install_java_version(java_version: int) -> bool:
     """
     pkg = TERMUX_JAVA_PACKAGES.get(java_version)
     if not pkg:
-        console.print(f"[bold red][✗] {t('common.error')}: Java {java_version} {t('wizard.java_not_available')}[/bold red]")
+        available = ", ".join(str(v) for v in sorted(TERMUX_JAVA_PACKAGES.keys()))
+        console.print(f"[bold red][✗] Java {java_version} {t('wizard.java_not_available_termux')}[/bold red]")
+        console.print(f"[dim]  {t('wizard.java_available_versions')}: {available}[/dim]")
         return False
 
     console.print()
