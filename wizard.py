@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from rich.console import Console
+from rich.panel import Panel
 
 from core import config, device_info, java_manager, memory_manager, server_manager, version_manager
 from core import downloader
@@ -33,7 +34,6 @@ def _pick_version(versions):
             opts.append((t("wizard.back_newer"),))
         choice = menus.ask(t("wizard.version"), opts, allow_custom=True)
         if not choice.isdigit():
-            # The user typed a version directly (e.g. "1.7.10") — accept it.
             if _is_valid_version(choice):
                 menus.success(f"{t('wizard.version_selected')}: {choice}")
                 return choice
@@ -42,7 +42,7 @@ def _pick_version(versions):
         i = int(choice)
         if i <= len(chunk):
             return chunk[i - 1]
-        idx = i - len(chunk)  # 1-based index within the extra options
+        idx = i - len(chunk)
         if more:
             if idx == 1:
                 offset += PAGE
@@ -53,7 +53,6 @@ def _pick_version(versions):
                 return v
             offset = max(0, offset - PAGE)
             continue
-        # last page (no more older versions)
         if idx == 1:
             v = menus.input_text(t("wizard.custom_version_prompt"), validate=_is_valid_version)
             menus.success(f"{t('wizard.version_selected')}: {v}")
@@ -64,7 +63,6 @@ def _pick_version(versions):
 
 
 def _pick_type():
-    """Vanilla is the only available type for now; Fabric/Forge shown but disabled."""
     opts = [
         (t("wizard.vanilla"), t("wizard.vanilla_desc")),
         (f"[yellow dim]{t('wizard.fabric')} — {t('wizard.coming_soon')}[/yellow dim]",),
@@ -77,6 +75,72 @@ def _pick_type():
         loader = t("wizard.fabric") if i == 2 else t("wizard.forge")
         menus.warning(t("wizard.soon_alert").format(loader=loader))
         continue
+
+
+def _pick_java(minecraft_version: str) -> int | None:
+    """Show Java selection screen. Returns chosen Java major version or None to go back."""
+    recommended = java_manager.get_recommended_java(minecraft_version)
+    compatible = java_manager.get_compatible_java_versions(minecraft_version)
+    installed = java_manager.detect_installed_java()
+
+    while True:
+        console.print()
+        lines = []
+        lines.append(f"  {t('wizard.java_minecraft')}: [bold]{minecraft_version}[/bold]")
+        lines.append("")
+        lines.append(f"  ☕ {t('wizard.java_recommended_label')}: [bold green]{t('wizard.java_version')} {recommended}[/bold green]")
+        lines.append("")
+
+        opts = []
+        for idx, jver in enumerate(compatible, 1):
+            label_key = java_manager.java_label(minecraft_version, jver)
+            label = t(label_key)
+            status_parts = [f"Java {jver}"]
+            if jver == recommended:
+                status_parts.append(f"[bold green]— {t('wizard.java_recommended')}[/bold green]")
+            elif jver > recommended:
+                status_parts.append(f"[cyan]— {t('wizard.java_compatible')}[/cyan]")
+            else:
+                status_parts.append(f"[red]— {t('wizard.java_incompatible')}[/red]")
+
+            if jver in installed:
+                status_parts.append(f" [dim]({t('common.installed')})[/dim]")
+
+            opts.append((" ".join(status_parts),))
+
+        opts.append((f"← {t('wizard.back')}",))
+
+        console.print(Panel(
+            "\n".join(lines),
+            border_style="cyan",
+            title=f"[bold cyan]{t('wizard.java_title')}[/bold cyan]",
+            padding=(0, 1),
+        ))
+
+        choice = menus.ask(t("wizard.java_select"), opts)
+
+        if not choice.isdigit():
+            menus.error(t("common.invalid_option"))
+            continue
+
+        i = int(choice)
+        if i == len(opts):
+            return None  # go back
+
+        if i < 1 or i > len(compatible):
+            menus.error(t("common.invalid_option"))
+            continue
+
+        chosen_java = compatible[i - 1]
+
+        # Check if incompatible
+        if not java_manager.is_java_compatible(minecraft_version, chosen_java):
+            menus.warning(t("wizard.java_incompatible_warning").format(
+                java=chosen_java, minecraft=minecraft_version
+            ))
+            continue
+
+        return chosen_java
 
 
 def run_wizard(auto_ram=None):
@@ -97,10 +161,43 @@ def run_wizard(auto_ram=None):
     version = _pick_version(versions)
 
     # Clear warning for very old versions that need Java 8 (not available in Termux)
-    if version_manager.needs_java8(version):
+    if java_manager.get_recommended_java(version) == 8:
         if not menus.confirm(t("wizard.old_java_warning").format(version=version)):
             menus.info(t("common.cancel"))
             return None, None
+
+    # Java selection screen
+    chosen_java = None
+    while True:
+        result = _pick_java(version)
+        if result is None:
+            # User pressed back — go back to type selection
+            return run_wizard(auto_ram=auto_ram)
+        chosen_java = result
+        break
+
+    # Ensure Java is installed
+    installed = java_manager.detect_installed_java()
+    java_path = installed.get(chosen_java)
+    if not java_path:
+        menus.info(t("wizard.java_downloading").format(java=chosen_java))
+        success = java_manager.install_java_version(chosen_java)
+        if not success:
+            menus.error(t("wizard.java_failed"))
+            return None, None
+        installed = java_manager.detect_installed_java()
+        java_path = installed.get(chosen_java)
+        if not java_path:
+            menus.error(t("wizard.java_failed"))
+            return None, None
+
+    # Verify Java version
+    ok, detected, path = java_manager.verify_java_version(chosen_java)
+    if not ok:
+        menus.error(t("wizard.java_verify_failed").format(expected=chosen_java, found=detected))
+        return None, None
+
+    menus.success(f"Java {chosen_java} ✓ ({path})")
 
     # RAM
     dev = device_info.collect()
@@ -132,19 +229,6 @@ def run_wizard(auto_ram=None):
         menus.error(t("common.cancel"))
         return None, None
 
-    # Java check
-    required_java = version_manager.java_21_required(version) and 21 or 17
-    if srv_type == "vanilla":
-        try:
-            req = version_manager.get_vanilla_server_info(version).get("java", required_java)
-            required_java = req if isinstance(req, int) else required_java
-        except Exception:
-            pass
-    menus.info(t("wizard.java_required").format(java=required_java))
-    if not java_manager.ensure_java(required_java, auto=True):
-        menus.error(t("wizard.java_failed"))
-        return None, None
-
     # internet check
     if not device_info.internet_available():
         menus.error(t("download.error_internet"))
@@ -164,6 +248,7 @@ def run_wizard(auto_ram=None):
         "name": name,
         "type": srv_type,
         "version": version,
+        "java_version": chosen_java,
         "ram_mb": ram_mb,
         "jar": "server.jar",
         "created": time.time(),
@@ -188,7 +273,7 @@ def run_wizard(auto_ram=None):
             th.join()
             if not ds.success:
                 raise RuntimeError(ds.error or "download_failed")
-            result = {"jar": "server.jar", "java": info.get("java", 17)}
+            result = {"jar": "server.jar", "java": info.get("java", chosen_java)}
         elif srv_type == "fabric":
             loaders = version_manager.fetch_fabric_versions(version)
             if not loaders:
@@ -211,6 +296,7 @@ def run_wizard(auto_ram=None):
         return None, None
 
     meta.update(result)
+    meta["java_version"] = chosen_java
     config.save_server_meta(name, meta)
 
     menus.success(t("wizard.created"))
@@ -219,6 +305,7 @@ def run_wizard(auto_ram=None):
         t("dash.minecraft"): version,
         t("dash.type"): srv_type.title(),
         t("dash.ram"): f"{ram_mb} MB",
+        t("dash.java"): f"Java {chosen_java}",
     })
 
     if menus.confirm(t("wizard.start_now")):

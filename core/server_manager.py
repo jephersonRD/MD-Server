@@ -168,10 +168,17 @@ def install_forge(server_dir, minecraft: str, forge: str, progress_cb=None):
 
 
 def build_java_command(server_dir, meta, ram_mb=None, nogui=True):
+    from core import java_manager
     ram = ram_mb or meta.get("ram_mb", 2048)
     jar = meta.get("jar", "server.jar")
+
+    java_ver = meta.get("java_version") or meta.get("java", 17)
+    java_exe = java_manager.get_java_executable(java_ver)
+    if not java_exe:
+        java_exe = "java"
+
     cmd = [
-        "java",
+        java_exe,
         f"-Xms{int(ram / 2)}M",
         f"-Xmx{ram}M",
         "-XX:+UseG1GC",
@@ -184,8 +191,48 @@ def build_java_command(server_dir, meta, ram_mb=None, nogui=True):
 
 
 def start_server(name: str) -> bool:
+    from core import java_manager
     server_dir = config.server_dir(name)
     meta = config.load_server_meta(name)
+
+    # Migrate old servers without java_version
+    java_manager.migrate_old_server_meta(name)
+    meta = config.load_server_meta(name)
+
+    # Check Java compatibility before starting
+    ok, err_msg = java_manager.check_java_before_start(name)
+    if not ok:
+        from rich.console import Console
+        _console = Console()
+        _console.print(f"[bold red]{err_msg}[/bold red]")
+        _console.print()
+        _console.print(f"[yellow][1] {t('java.install_missing')}[/yellow]")
+        _console.print(f"[yellow][2] {t('java.choose_other')}[/yellow]")
+        _console.print(f"[yellow][3] {t('common.cancel')}[/yellow]")
+        try:
+            choice = _console.input(f"[bold]{t('common.choice')}: [/bold]").strip()
+        except (EOFError, KeyboardInterrupt):
+            return False
+        if choice == "1":
+            java_ver = meta.get("java_version") or meta.get("java", 17)
+            if java_manager.install_java_version(java_ver):
+                return start_server(name)
+            return False
+        elif choice == "2":
+            mc_version = meta.get("version", "")
+            new_java = None
+            while True:
+                result = _pick_java_for_start(mc_version, meta)
+                if result is None:
+                    return False
+                new_java = result
+                break
+            meta["java_version"] = new_java
+            meta["java"] = new_java
+            config.save_server_meta(name, meta)
+            return start_server(name)
+        return False
+
     cmd = build_java_command(server_dir, meta)
     if not os.path.exists(os.path.join(server_dir, meta.get("jar", "server.jar"))):
         return False
@@ -206,6 +253,75 @@ def start_server(name: str) -> bool:
     config.set_state(name, "started_at", time.time())
     config.set_state(name, "error", None)
     return True
+
+
+def _pick_java_for_start(mc_version, meta):
+    """Show Java selection when starting a server with incompatible Java."""
+    from core import java_manager
+    from rich.console import Console
+    from rich.panel import Panel
+    from core.i18n import t
+
+    _console = Console()
+    recommended = java_manager.get_recommended_java(mc_version)
+    compatible = java_manager.get_compatible_java_versions(mc_version)
+    installed = java_manager.detect_installed_java()
+
+    while True:
+        _console.print()
+        _console.print(Panel(
+            f"  {t('wizard.java_minecraft')}: [bold]{mc_version}[/bold]\n\n"
+            f"  ☕ {t('wizard.java_recommended_label')}: [bold green]{t('wizard.java_version')} {recommended}[/bold green]",
+            border_style="cyan",
+            title=f"[bold cyan]{t('wizard.java_title')}[/bold cyan]",
+            padding=(0, 1),
+        ))
+
+        opts = []
+        for jver in compatible:
+            if jver == recommended:
+                color = "green"
+            elif jver > recommended:
+                color = "cyan"
+            else:
+                color = "red"
+            parts = [f"[{color}]Java {jver}[/]"]
+            if jver == recommended:
+                parts.append(f" [bold green]— {t('wizard.java_recommended')}[/bold green]")
+            elif jver > recommended:
+                parts.append(f" [cyan]— {t('wizard.java_compatible')}[/cyan]")
+            else:
+                parts.append(f" [red]— {t('wizard.java_incompatible')}[/red]")
+            if jver in installed:
+                parts.append(f" [dim]({t('common.installed')})[/dim]")
+            _console.print(f"  [{''.join(parts)}]")
+        _console.print(f"  [dim][0] {t('common.cancel')}[/dim]")
+
+        try:
+            choice = _console.input(f"[bold]{t('common.choice')}: [/bold]").strip()
+        except (EOFError, KeyboardInterrupt):
+            return None
+
+        if choice == "0" or choice == "":
+            return None
+        if not choice.isdigit():
+            continue
+
+        i = int(choice)
+        if i < 1 or i > len(compatible):
+            continue
+
+        chosen = compatible[i - 1]
+        if not java_manager.is_java_compatible(mc_version, chosen):
+            _console.print(f"[yellow]{t('wizard.java_incompatible_warning').format(java=chosen, minecraft=mc_version)}[/yellow]")
+            continue
+
+        if chosen not in installed:
+            _console.print(f"[cyan]{t('wizard.java_downloading').format(java=chosen)}[/cyan]")
+            if not java_manager.install_java_version(chosen):
+                continue
+
+        return chosen
 
 
 def get_process(name: str):
