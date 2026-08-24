@@ -148,19 +148,16 @@ def get_recommended_java(minecraft_version: str) -> int:
 
 
 def get_compatible_java_versions(minecraft_version: str) -> list[int]:
-    """Return all Java versions compatible with this Minecraft version, sorted by preference.
-    The first element is always the recommended version.
+    """Return Java versions compatible with this Minecraft version, sorted by preference.
+    Only includes versions >= recommended minimum. Recommended version is always first.
     """
     recommended = get_recommended_java(minecraft_version)
     compatible = []
-    incompatible = []
     for jver in KNOWN_JAVA_VERSIONS:
         if jver >= recommended:
             compatible.append(jver)
-        else:
-            incompatible.append(jver)
-    # Recommended first, then others compatible, then incompatible at end
-    result = [recommended] + [j for j in compatible if j != recommended] + incompatible
+    # Recommended first, then others
+    result = [recommended] + [j for j in sorted(compatible) if j != recommended]
     return result
 
 
@@ -175,7 +172,7 @@ def java_label(minecraft_version: str, java_version: int) -> str:
     recommended = get_recommended_java(minecraft_version)
     if java_version == recommended:
         return "wizard.java_recommended"
-    if java_version > recommended:
+    if java_version >= recommended:
         return "wizard.java_compatible"
     return "wizard.java_incompatible"
 
@@ -242,8 +239,9 @@ def detect_installed_java() -> dict[int, str]:
     """
     found = {}
 
-    # Check Termux bin
     prefix = os.environ.get("PREFIX", "/data/data/com.termux/files/usr")
+
+    # 1. Check Termux bin for java-XX binaries (alternatives system)
     bin_dir = os.path.join(prefix, "bin")
     if os.path.isdir(bin_dir):
         for name in os.listdir(bin_dir):
@@ -253,7 +251,19 @@ def detect_installed_java() -> dict[int, str]:
                 if os.path.isfile(path) and os.access(path, os.X_OK):
                     found[jver] = path
 
-    # Check runtime dir
+    # 2. Check JDK directories in $PREFIX/lib/jvm/
+    jvm_dir = os.path.join(prefix, "lib", "jvm")
+    if os.path.isdir(jvm_dir):
+        for entry in os.listdir(jvm_dir):
+            match = re.match(r"java-(\d+)-openjdk", entry)
+            if match:
+                jver = int(match.group(1))
+                if jver not in found:
+                    java_bin = os.path.join(jvm_dir, entry, "bin", "java")
+                    if os.path.isfile(java_bin) and os.access(java_bin, os.X_OK):
+                        found[jver] = java_bin
+
+    # 3. Check runtime dir (MD-Server managed JDKs)
     runtime_dir = os.path.expanduser("~/mdserver/runtime")
     if os.path.isdir(runtime_dir):
         for entry in os.listdir(runtime_dir):
@@ -262,13 +272,14 @@ def detect_installed_java() -> dict[int, str]:
                     jver = int(entry[4:])
                 except ValueError:
                     continue
-                jdk_dir = os.path.join(runtime_dir, entry)
-                for root, dirs, files in os.walk(jdk_dir):
-                    if "java" in files:
-                        found[jver] = os.path.join(root, "java")
-                        break
+                if jver not in found:
+                    jdk_dir = os.path.join(runtime_dir, entry)
+                    for root, dirs, files in os.walk(jdk_dir):
+                        if "java" in files:
+                            found[jver] = os.path.join(root, "java")
+                            break
 
-    # Check system java
+    # 4. Check system java
     java_path = shutil.which("java")
     if java_path:
         jver = _detect_java_version_at(java_path)

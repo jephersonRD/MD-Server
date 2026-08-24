@@ -358,6 +358,7 @@
   "wizard.java_install_failed_title": "Java installation error",
   "wizard.java_retry": "Retry installation",
   "wizard.java_choose_other": "Choose another Java version",
+  "wizard.java_use_installed": "Use Java {java} (already installed)",
   "wizard.back": "Back",
   "wizard.back_to_type": "Back to server type",
   "wizard.back_to_version": "Back to version selection",

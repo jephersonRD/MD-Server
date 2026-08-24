@@ -279,10 +279,11 @@ def _pick_java_for_start(mc_version, meta):
 
         opts = []
         for jver in compatible:
-            if jver == recommended:
-                color = "green"
-            elif jver > recommended:
-                color = "cyan"
+            if jver >= recommended:
+                if jver == recommended:
+                    color = "green"
+                else:
+                    color = "cyan"
             else:
                 color = "red"
             parts = [f"[{color}]Java {jver}[/]"]

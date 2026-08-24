@@ -121,17 +121,18 @@ def _pick_java(minecraft_version: str):
             can_install = java_manager.can_install_java(jver)
             is_installed = jver in installed
 
-            if jver == recommended:
-                status = f"[bold green]Java {jver} — {t('wizard.java_recommended')}[/bold green]"
-            elif jver > recommended:
-                status = f"[cyan]Java {jver} — {t('wizard.java_compatible')}[/cyan]"
+            if jver >= recommended:
+                if jver == recommended:
+                    status = f"[bold green]Java {jver} — {t('wizard.java_recommended')}[/bold green]"
+                else:
+                    status = f"[cyan]Java {jver} — {t('wizard.java_compatible')}[/cyan]"
             else:
                 status = f"[red]Java {jver} — {t('wizard.java_incompatible')}[/red]"
 
             if is_installed:
                 status += f" [dim]({t('common.installed')})[/dim]"
             elif not can_install:
-                status += f" [dim]({t('wizard.java_not_available_termux')})[/dim]"
+                status += f" [dim]({t('wizard.java_not_available_termux').format(java=jver)})[/dim]"
 
             opts.append((status, f"  [dim]{explanation}[/dim]"))
 
@@ -230,18 +231,38 @@ def run_wizard(auto_ram=None):
 
                 # Install failed — show options (DO NOT restart wizard)
                 menus.error(t("wizard.java_install_failed").format(java=chosen_java))
-                retry_opts = [
-                    (t("wizard.java_retry"),),
-                    (t("wizard.java_choose_other"),),
-                    (t("common.cancel"),),
+
+                # Find installed Java versions as alternatives
+                installed = java_manager.detect_installed_java()
+                installed_compatible = [
+                    v for v in sorted(installed.keys(), reverse=True)
+                    if v >= java_manager.get_recommended_java(version)
                 ]
+
+                retry_opts = []
+                retry_opts.append((t("wizard.java_retry"),))
+                for alt_java in installed_compatible[:3]:
+                    retry_opts.append((t("wizard.java_use_installed").format(java=alt_java),))
+                retry_opts.append((t("wizard.java_choose_other"),))
+                retry_opts.append((t("common.cancel"),))
+
                 retry_choice = menus.ask(t("wizard.java_install_failed_title"), retry_opts)
                 if retry_choice == "1":
                     continue  # retry same Java
-                elif retry_choice == "2":
-                    break  # back to _pick_java
+                elif retry_choice.isdigit():
+                    choice_idx = int(retry_choice) - 1
+                    if 1 <= choice_idx <= len(installed_compatible):
+                        # Use the installed alternative
+                        alt_java = installed_compatible[choice_idx - 1]
+                        chosen_java = alt_java
+                        java_ok = True
+                        break
+                    elif choice_idx == len(installed_compatible) + 1:
+                        break  # back to _pick_java
+                    else:
+                        break  # cancel → back to version selection
                 else:
-                    break  # cancel → back to version selection
+                    break
 
             if not java_ok:
                 continue  # back to version selection (loop while True)
