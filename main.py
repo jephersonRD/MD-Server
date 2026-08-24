@@ -2,7 +2,7 @@
 import os
 import sys
 
-__version__ = "1.1.9-beta"
+__version__ = "1.2.0"
 __repo__ = "jephersonRD/MD-Server"
 __branch__ = "main"
 
@@ -145,6 +145,47 @@ def main_menu():
             continue
 
 
+def show_developer_info():
+    """Fetch and display developer info from GitHub."""
+    import urllib.request
+    import json
+    from rich.table import Table
+
+    username = "jephersonRD"
+    try:
+        console.print(f"\n  [dim]Obteniendo datos de {username}...[/dim]")
+        req = urllib.request.Request(
+            f"https://api.github.com/users/{username}",
+            headers={"Accept": "application/vnd.github.v3+json", "User-Agent": "MD-Server"}
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read())
+
+        table = Table(show_header=False, border_style="cyan", padding=(0, 2))
+        table.add_column("Key", style="bold")
+        table.add_column("Value")
+
+        table.add_row("👤", data.get("name", username))
+        table.add_row("📛", f"@{data.get('login', username)}")
+        if data.get("bio"):
+            table.add_row("📝", data["bio"])
+        table.add_row("📦", f"{data.get('public_repos', 0)} repositorios")
+        table.add_row("⭐", f"{data.get('followers', 0)} seguidores")
+        table.add_row("🔗", data.get("html_url", f"https://github.com/{username}"))
+
+        console.print()
+        console.print(Panel(
+            table,
+            title=f"[bold cyan]{t('dev_info')}[/bold cyan]",
+            subtitle=f"[dim]GitHub[/dim]",
+            border_style="cyan",
+            padding=(0, 1),
+        ))
+    except Exception:
+        console.print(f"\n  [bold]👤 Desarrollador: jephersonRD[/bold]")
+        console.print(f"  [dim]https://github.com/jephersonRD[/dim]\n")
+
+
 def global_settings_menu():
     while True:
         console.clear()
@@ -153,6 +194,7 @@ def global_settings_menu():
             t("main.settings"),
             [(f"🌐 {t('change_lang')}",),
              (f"🖥 {t('device_title')}",),
+             (f"👤 {t('dev_info')}",),
              (f"🔄 {t('main.check_updates')}",),
              (f"← {t('menu.back')}",)],
         )
@@ -163,6 +205,9 @@ def global_settings_menu():
             show_device_analysis()
             console.input(t("common.enter") + " ")
         elif n == 3:
+            show_developer_info()
+            console.input(t("common.enter") + " ")
+        elif n == 4:
             auto_update(["--check-update"], verbose=True)
             console.input(t("common.enter") + " ")
         else:

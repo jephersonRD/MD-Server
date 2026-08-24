@@ -223,6 +223,7 @@
   "firstrun.yes_new": "Yes, first time — create a new server",
   "firstrun.no_existing": "No, I already have a server — continue with it",
   "change_lang": "Change language",
+  "dev_info": "Developer info",
   "lang.changed": "Language changed",
   "exit.bye": "Thanks for using MD Server. See you soon!",
   "key.saved": "Saved. You can restart MD Server to apply changes.",
