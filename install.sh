@@ -13,14 +13,44 @@
 # ============================================================
 set -euo pipefail
 
-# ---------- helpers ----------
-INFO='\033[0;36m'; OK='\033[0;32m'; WARN='\033[0;33m'
-ERR='\033[0;31m'; BOLD='\033[1m'; NC='\033[0m'
+# ---------- colors ----------
+CYAN='\033[0;36m'; GREEN='\033[0;32m'; YELLOW='\033[0;33m'
+RED='\033[0;31m'; MAGENTA='\033[0;35m'; WHITE='\033[1;37m'
+GRAY='\033[0;90m'; BOLD='\033[1m'; NC='\033[0m'
 
-msg()  { echo -e "${INFO}[i]${NC} $1"; }
-ok()   { echo -e "${OK}[✓]${NC} $1"; }
-warn() { echo -e "${WARN}[!]${NC} $1"; }
-die()  { echo -e "${ERR}[✗]${NC} $1" >&2; exit 1; }
+# ---------- helpers ----------
+msg()   { echo -e "  ${CYAN}→${NC} $1"; }
+ok()    { echo -e "  ${GREEN}✓${NC} $1"; }
+warn()  { echo -e "  ${YELLOW}⚠${NC} $1"; }
+die()   { echo -e "  ${RED}✗${NC} $1" >&2; exit 1; }
+
+BOX_W=60
+box_line() {
+    local char="$1"
+    local line=""
+    for ((i=0; i<BOX_W; i++)); do line+="$char"; done
+    echo -e "$line"
+}
+
+section() {
+    echo
+    echo -e "${CYAN}╭${NC}$(box_line "─")${CYAN}╮${NC}"
+    echo -e "${CYAN}│${NC}  ${BOLD}$1${NC}"
+    echo -e "${CYAN}├${NC}$(box_line "─")${CYAN}┤${NC}"
+}
+
+section_end() {
+    echo -e "${CYAN}╰${NC}$(box_line "─")${CYAN}╯${NC}"
+}
+
+center_text() {
+    local text="$1"
+    local visible_len=${#text}
+    local total=$((BOX_W - 2))
+    local pad=$(( (total - visible_len) / 2 ))
+    local pad_r=$(( total - visible_len - pad ))
+    printf "%${pad}s""${text}""%${pad_r}s" "" ""
+}
 
 # ---------- project info ----------
 GITHUB_REPO="jephersonRD/MD-Server"
@@ -30,9 +60,21 @@ RAW_BASE="https://raw.githubusercontent.com/${GITHUB_REPO}/${BRANCH}"
 INSTALL_DIR="${MD_SERVER_HOME:-$HOME}/MD-Server"
 
 # ---------- banner ----------
-echo -e "${INFO}╔══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${INFO}║     MD SERVER v1.1.7-beta — install / update / repair ║${NC}"
-echo -e "${INFO}╚══════════════════════════════════════════════════════════╝${NC}"
+clear
+echo
+echo -e "${CYAN}╭${NC}$(box_line "─")${CYAN}╮${NC}"
+echo -e "${CYAN}│${NC}                                                              ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}   ${WHITE}███╗   ███╗██████╗   ███████╗███████╗██████╗ ██╗   ██╗${NC}   ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}   ${WHITE}████╗ ████║██╔══██╗  ██╔════╝██╔════╝██╔══██╗██║   ██║${NC}   ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}   ${WHITE}██╔████╔██║██║  ██║  ███████╗█████╗  ██████╔╝██║   ██║${NC}   ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}   ${WHITE}██║╚██╔╝██║██║  ██║  ╚════██║██╔══╝  ██╔══██╗██║   ██║${NC}   ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}   ${WHITE}██║ ╚═╝ ██║██████╔╝  ███████║███████╗██║  ██║╚██████╔╝${NC}   ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}   ${WHITE}╚═╝     ╚═╝╚═════╝   ╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ${NC}   ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}                                                              ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}        ${GRAY}Minecraft Java Server Manager for Termux${NC}              ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}              ${MAGENTA}v1.1.8-beta${NC}  ${GRAY}·  Install / Update / Repair${NC}     ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}                                                              ${CYAN}│${NC}"
+echo -e "${CYAN}╰${NC}$(box_line "─")${CYAN}╯${NC}"
 echo
 
 # ---------- are we running from inside the repo? ----------
@@ -60,14 +102,20 @@ check_net() {
     fi
     return 1
 }
-if ! check_net; then
+
+section "Network Check"
+if check_net; then
+    ok "Internet connection available."
+else
     warn "No internet connection detected."
     if [ -f "${REPO_DIR}/main.py" ]; then
         warn "Continuing with the already-installed files..."
     else
+        section_end
         die "Internet connection required to install MD Server."
     fi
 fi
+section_end
 
 # ---------- package manager detection ----------
 detect_pkg() {
@@ -98,7 +146,11 @@ install_pkg() {
 have_cmd() { command -v "$1" >/dev/null 2>&1; }
 
 # ---------- dependencies ----------
-if ! have_cmd git; then
+section "Checking Dependencies"
+
+if have_cmd git; then
+    ok "git is already installed."
+else
     msg "Installing git..."
     install_pkg git || die "Could not install git. Install it manually and re-run."
     ok "git installed."
@@ -118,12 +170,18 @@ if [ -z "$PYTHON" ]; then
         PYTHON="python3"
     fi
     ok "Python installed."
+else
+    ok "Python found: ${PYTHON}"
 fi
 
-if ! have_cmd curl && ! have_cmd wget; then
+if have_cmd curl || have_cmd wget; then
+    ok "Network tools available."
+else
     msg "Installing curl..."
     install_pkg curl || warn "Could not install curl; will try without it."
 fi
+
+section_end
 
 # ---------- (re)obtain / update the code ----------
 STATE="installed"   # installed | updated | up_to_date | repaired
@@ -132,7 +190,7 @@ ensure_repo() {
     if [ -d "${REPO_DIR}/.git" ]; then
         local old_head
         old_head="$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo none)"
-        msg "Updating existing installation at ${REPO_DIR}..."
+        msg "Updating existing installation..."
         git -C "$REPO_DIR" fetch --depth 1 "origin" "$BRANCH" >/dev/null 2>&1 || \
             git -C "$REPO_DIR" fetch origin "$BRANCH" >/dev/null 2>&1 || true
         if git -C "$REPO_DIR" rev-parse --verify "origin/${BRANCH}" >/dev/null 2>&1; then
@@ -151,9 +209,8 @@ ensure_repo() {
             STATE="updated"
         fi
     elif [ -d "$REPO_DIR" ]; then
-        # Existing folder that is NOT a git repo: inspect before touching anything.
         if [ -f "${REPO_DIR}/main.py" ] && [ -f "${REPO_DIR}/install.sh" ]; then
-            msg "Converting existing folder into a git repository (no data lost)..."
+            msg "Converting existing folder into a git repository..."
             git -C "$REPO_DIR" init -q 2>/dev/null || true
             git -C "$REPO_DIR" remote remove origin 2>/dev/null || true
             git -C "$REPO_DIR" remote add origin "$GITHUB_URL"
@@ -163,10 +220,9 @@ ensure_repo() {
             fi
             STATE="repaired"
         else
-            # Damaged / unrelated folder: move it aside safely, then clone fresh.
             local backup="${REPO_DIR}.old-$(date +%Y%m%d-%H%M%S)"
-            warn "The folder '${REPO_DIR}' is damaged or is not MD Server. Moving it to:"
-            warn "  ${backup}"
+            warn "The folder '${REPO_DIR}' is damaged or is not MD Server."
+            warn "Moving it to: ${backup}"
             mv "$REPO_DIR" "$backup"
             ok "Your files were preserved at: ${backup}"
             clone_fresh
@@ -183,7 +239,6 @@ clone_fresh() {
     if have_cmd git; then
         git clone --depth 1 --branch "$BRANCH" "$GITHUB_URL" "$REPO_DIR" || die "Clone failed. Check your connection and re-run."
     else
-        # git-less fallback via tarball
         mkdir -p "$REPO_DIR"
         if have_cmd curl; then
             curl -fsSL "${RAW_BASE}/.gitignore" -o "${REPO_DIR}/.gitignore" || true
@@ -194,10 +249,18 @@ clone_fresh() {
             die "Neither git, curl nor wget are available."
         fi
     fi
-    ok "MD Server downloaded to ${REPO_DIR}."
+    ok "MD Server downloaded."
 }
 
+section "Repository Status"
 ensure_repo
+case "$STATE" in
+    installed)  ok "Fresh installation completed." ;;
+    updated)    ok "Updated to latest version." ;;
+    up_to_date) ok "Already up to date." ;;
+    repaired)   ok "Installation repaired successfully." ;;
+esac
+section_end
 
 # ---------- python dependencies ----------
 install_pydeps() {
@@ -216,7 +279,10 @@ install_pydeps() {
     fi
     ok "Python dependencies ready."
 }
+
+section "Python Dependencies"
 install_pydeps
+section_end
 
 # ---------- global command ----------
 make_executable() { chmod +x "$1" 2>/dev/null || true; }
@@ -232,11 +298,12 @@ else
 fi
 mkdir -p "$BIN_DIR"
 
-# Remove any stale real file so the symlink can be created
 [ -e "$BIN_DIR/mdserver" ] && [ ! -L "$BIN_DIR/mdserver" ] && rm -f "$BIN_DIR/mdserver"
 ln -sf "${REPO_DIR}/main.py" "$BIN_DIR/mdserver"
 
-# Ensure BIN_DIR is on PATH (non-Termux)
+section "System Integration"
+ok "Global command 'mdserver' created."
+
 case ":$PATH:" in
     *":$BIN_DIR:"*) ;;
     *)  profile=""
@@ -244,58 +311,53 @@ case ":$PATH:" in
         elif [ -f "${HOME}/.bashrc" ]; then profile="${HOME}/.bashrc"; fi
         if [ -n "$profile" ]; then
             printf '\n# Added by MD Server installer\nexport PATH="%s:$PATH"\n' "$BIN_DIR" >> "$profile"
-            warn "Added ${BIN_DIR} to PATH in ${profile}. Re-open the terminal or run:"
-            warn "  export PATH=\"${BIN_DIR}:\$PATH\""
+            warn "Added ${BIN_DIR} to PATH in ${profile}."
+            warn "Re-open the terminal or run: export PATH=\"${BIN_DIR}:\$PATH\""
         else
             warn "Add this to your shell profile to use 'mdserver' from anywhere:"
             warn "  export PATH=\"${BIN_DIR}:\$PATH\""
         fi
         ;;
 esac
+section_end
 
 # ---------- done ----------
 echo
 case "$STATE" in
     updated)
-        echo -e "${OK}╔══════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "${OK}║       ✓  MD SERVER HA SIDO ACTUALIZADO CORRECTAMENTE        ║${NC}"
-        echo -e "${OK}╚══════════════════════════════════════════════════════════════╝${NC}"
+        echo -e "${GREEN}╭${NC}$(box_line "─")${GREEN}╮${NC}"
+        echo -e "${GREEN}│${NC}  ${WHITE}✓  MD SERVER UPDATED SUCCESSFULLY${NC}                           ${GREEN}│${NC}"
+        echo -e "${GREEN}╰${NC}$(box_line "─")${GREEN}╯${NC}"
         ;;
     repaired)
-        echo -e "${OK}╔══════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "${OK}║        ✓  MD SERVER REPARADO Y ACTUALIZADO                   ║${NC}"
-        echo -e "${OK}╚══════════════════════════════════════════════════════════════╝${NC}"
+        echo -e "${GREEN}╭${NC}$(box_line "─")${GREEN}╮${NC}"
+        echo -e "${GREEN}│${NC}  ${WHITE}✓  MD SERVER REPAIRED AND UPDATED${NC}                           ${GREEN}│${NC}"
+        echo -e "${GREEN}╰${NC}$(box_line "─")${GREEN}╯${NC}"
         ;;
     up_to_date)
-        echo -e "${OK}╔══════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "${OK}║            ✓  MD SERVER YA ESTÁ ACTUALIZADO                  ║${NC}"
-        echo -e "${OK}╚══════════════════════════════════════════════════════════════╝${NC}"
+        echo -e "${GREEN}╭${NC}$(box_line "─")${GREEN}╮${NC}"
+        echo -e "${GREEN}│${NC}  ${WHITE}✓  MD SERVER IS ALREADY UP TO DATE${NC}                           ${GREEN}│${NC}"
+        echo -e "${GREEN}╰${NC}$(box_line "─")${GREEN}╯${NC}"
         ;;
     *)
-        echo -e "${OK}╔══════════════════════════════════════════════════════════════╗${NC}"
-        echo -e "${OK}║              ✓  MD SERVER LISTO PARA USAR                    ║${NC}"
-        echo -e "${OK}╚══════════════════════════════════════════════════════════════╝${NC}"
+        echo -e "${GREEN}╭${NC}$(box_line "─")${GREEN}╮${NC}"
+        echo -e "${GREEN}│${NC}  ${WHITE}✓  MD SERVER READY TO USE${NC}                                    ${GREEN}│${NC}"
+        echo -e "${GREEN}╰${NC}$(box_line "─")${GREEN}╯${NC}"
         ;;
 esac
 echo
-echo -e "${OK}✓ MD Server ha sido instalado/actualizado correctamente.${NC}"
-echo
-echo -e "${BOLD}🚀 Para abrir MD Server:${NC}"
-echo -e "   Escribe este comando en Termux:"
-echo
-echo -e "   ${BOLD}mdserver${NC}"
-echo
-echo -e "Puedes ejecutar \"mdserver\" desde ${BOLD}cualquier carpeta${NC}."
-echo -e "No necesitas entrar manualmente a la carpeta ${BOLD}MD-Server${NC}."
-echo
-echo -e "   ${INFO}Ejemplo:${NC}"
-echo
-echo -e "   ${BOLD}\$ mdserver${NC}"
-echo
-echo -e "¿Es la primera vez que lo utilizas?"
-echo -e "Ejecuta \"mdserver\" y sigue el asistente para crear tu servidor."
-echo
+
+# ---------- next steps ----------
+echo -e "${CYAN}╭${NC}$(box_line "─")${CYAN}╮${NC}"
+echo -e "${CYAN}│${NC}  ${BOLD}Next Steps${NC}                                                    ${CYAN}│${NC}"
+echo -e "${CYAN}├${NC}$(box_line "─")${CYAN}┤${NC}"
+echo -e "${CYAN}│${NC}                                                              ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}  Run ${BOLD}mdserver${NC} from any folder to start.                    ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}  The wizard will guide you to create your server.            ${CYAN}│${NC}"
+echo -e "${CYAN}│${NC}                                                              ${CYAN}│${NC}"
 if [ -f "${REPO_DIR}/main.py" ]; then
-    echo -e "${INFO}  Código instalado en: ${BOLD}${REPO_DIR}${NC}"
+    echo -e "${CYAN}│${NC}  ${GRAY}Installed at: ${BOLD}${REPO_DIR}${NC}                                   ${CYAN}│${NC}"
+    echo -e "${CYAN}│${NC}                                                              ${CYAN}│${NC}"
 fi
+echo -e "${CYAN}╰${NC}$(box_line "─")${CYAN}╯${NC}"
 echo
